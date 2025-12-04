@@ -1,9 +1,9 @@
-import 'package:blood_link/screens/on_boarding_screen_4.dart';
+import 'package:blood_link/screens/login_screen.dart';
 import 'package:blood_link/widgets/my_button_1.dart';
 import 'package:flutter/material.dart';
 
-class OnBoardingScreen3 extends StatelessWidget {
-  const OnBoardingScreen3({super.key});
+class OnBoardingScreen4 extends StatelessWidget {
+  const OnBoardingScreen4({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +17,12 @@ class OnBoardingScreen3 extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/images/on_boarding_3.png'),
+                    Image.asset('assets/images/on_boarding_4.png'),
                     // Invisible Box
                     SizedBox(height: 10),
                     // Title
                     Text(
-                      "Track Your Donations Effortlessly",
+                      "Request Blood Instantly",
                       style: TextStyle(
                         fontFamily: 'Bricolage Grotesque',
                         fontSize: 28,
@@ -34,7 +34,7 @@ class OnBoardingScreen3 extends StatelessWidget {
                     SizedBox(height: 5),
                     // Subtitle
                     Text(
-                      "Monitor your donation activity and stay updated on all requests in one place.",
+                      "A safe, trusted way to connect with donors during critical moments.",
                       style: TextStyle(
                         fontFamily: 'Bricolage Grotesque',
                         fontSize: 18,
@@ -50,12 +50,10 @@ class OnBoardingScreen3 extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => OnBoardingScreen4(),
-                    ),
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
                   );
                 },
-                text: "Next",
+                text: "Get Started",
               ),
             ],
           ),
