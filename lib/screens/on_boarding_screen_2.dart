@@ -1,5 +1,6 @@
 import 'package:blood_link/screens/on_boarding_screen_3.dart';
 import 'package:blood_link/widgets/my_button_1.dart';
+import 'package:blood_link/widgets/on_boarding_dots.dart';
 import 'package:flutter/material.dart';
 
 class OnBoardingScreen2 extends StatelessWidget {
@@ -45,6 +46,10 @@ class OnBoardingScreen2 extends StatelessWidget {
                   ],
                 ),
               ),
+              // Dots Indicator
+              OnBoardingDots(currentIndex: 1),
+              // Invisible Box
+              SizedBox(height: 20),
               // Invisible Box
               MyButton1(
                 onPressed: () {
