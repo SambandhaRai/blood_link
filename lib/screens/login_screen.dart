@@ -1,3 +1,4 @@
+import 'package:blood_link/screens/home_screen.dart';
 import 'package:blood_link/screens/sign_up_screen.dart';
 import 'package:blood_link/widgets/my_button_1.dart';
 import 'package:blood_link/widgets/my_text_form_field.dart';
@@ -175,7 +176,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Login Button
                     MyButton1(
                       onPressed: () {
-                        // Navigator.push(context, MaterialPageRoute(builder: (context) => ))
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
                       },
                       text: "Login",
                     ),
