@@ -17,7 +17,7 @@ class MyButton1 extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: color ?? const Color(0xFFA72636),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadiusGeometry.circular(12),
         ),
@@ -28,7 +28,7 @@ class MyButton1 extends StatelessWidget {
         style: const TextStyle(
           fontFamily: 'Bricolage Grotesque',
           fontWeight: FontWeight.w600,
-          fontSize: 18,
+          fontSize: 20,
           color: Colors.white,
         ),
       ),
