@@ -8,59 +8,88 @@ class OnBoardingScreen2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
+              // Main content: image + text
               Expanded(
+                flex: 7,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/images/on_boarding_2.png'),
-                    // Invisible Box
-                    SizedBox(height: 10),
-                    // Title
-                    Text(
-                      "Connect with the Right Donor",
-                      style: TextStyle(
-                        fontFamily: 'Bricolage Grotesque',
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600,
+                    // Image
+                    Flexible(
+                      flex: 5,
+                      child: Image.asset(
+                        'assets/images/on_boarding_2.png',
+                        height: screenHeight * 0.4,
+                        fit: BoxFit.contain,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                     // Invisible Box
-                    SizedBox(height: 5),
-                    // Subtitle
-                    Text(
-                      "We only show you blood requests that match your blood group for accurate and safe donations.",
-                      style: TextStyle(
-                        fontFamily: 'Bricolage Grotesque',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w200,
+                    SizedBox(height: screenHeight * 0.03),
+                    // Title
+                    Flexible(
+                      flex: 2,
+                      child: Text(
+                        "Connect with the Right Donor",
+                        style: TextStyle(
+                          fontFamily: 'Bricolage Grotesque',
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
+                    ),
+                    // Invisible Box
+                    SizedBox(height: screenHeight * 0.015),
+                    // Subtitle
+                    Flexible(
+                      flex: 2,
+                      child: Text(
+                        "We only show you blood requests that match your blood group for accurate and safe donations.",
+                        style: TextStyle(
+                          fontFamily: 'Bricolage Grotesque',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w200,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
               ),
-              // Dots Indicator
-              OnBoardingDots(currentIndex: 1),
-              // Invisible Box
-              SizedBox(height: 20),
-              // Invisible Box
-              MyButton1(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OnBoardingScreen3(),
+              // Bottom section: dots + button
+              Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Dots Indicator
+                    OnBoardingDots(currentIndex: 1),
+                    // Invisible Box
+                    SizedBox(height: screenHeight * 0.02),
+                    // Next Button
+                    MyButton1(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OnBoardingScreen3(),
+                          ),
+                        );
+                      },
+                      text: "Next",
                     ),
-                  );
-                },
-                text: "Next",
+                    // Invisible Box
+                    SizedBox(height: screenHeight * 0.03),
+                  ],
+                ),
               ),
             ],
           ),
