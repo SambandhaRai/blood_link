@@ -3,7 +3,6 @@ import 'package:blood_link/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
-// 1. Convert to a StatefulWidget
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -12,13 +11,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // 2. State to manage the currently selected index (0 is Home)
   int _selectedIndex = 0;
 
-  // Define the primary color (dark red from the header)
   static const Color _primaryRed = Color(0xFFA72636);
 
-  // 3. Function to handle tab selection
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -29,16 +25,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      // 4. Implement the Bottom Navigation Bar
+
       bottomNavigationBar: BottomNavigationBar(
-        // Use the selected index from the state
         currentIndex: _selectedIndex,
-        // Use the handler function
+
         onTap: _onItemTapped,
 
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: _primaryRed, // Use the app's accent color
+        selectedItemColor: _primaryRed,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         selectedLabelStyle: const TextStyle(
@@ -58,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // Rest of your existing body content
       body: SingleChildScrollView(
         child: Column(
           children: [
