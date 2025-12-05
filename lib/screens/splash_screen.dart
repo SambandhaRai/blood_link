@@ -26,7 +26,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Make logo 25-35% of screen height for better visibility
     final logoHeight = screenHeight * 0.5;
 
     return Scaffold(
