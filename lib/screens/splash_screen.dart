@@ -14,21 +14,27 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Timer(Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => OnBoardingScreen1()),
+        MaterialPageRoute(builder: (context) => const OnBoardingScreen1()),
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Make logo 25-35% of screen height for better visibility
+    final logoHeight = screenHeight * 0.3;
+
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Image.asset('assets/images/blood_link_logo_red.png')],
+        child: Image.asset(
+          'assets/images/blood_link_logo_red.png',
+          height: logoHeight,
+          fit: BoxFit.contain,
         ),
       ),
     );
