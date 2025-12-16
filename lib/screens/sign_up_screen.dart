@@ -1,5 +1,4 @@
 import 'package:blood_link/screens/login_screen.dart';
-import 'package:blood_link/widgets/my_button_1.dart';
 import 'package:blood_link/widgets/my_multi_line_text_form_field.dart';
 import 'package:blood_link/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
@@ -331,11 +330,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             const SizedBox(height: 20),
 
                             // Sign Up Button
-                            MyButton1(
+                            ElevatedButton(
                               onPressed: () {
                                 // Implement Sign Up logic
                               },
-                              text: "Sign Up",
+                              child: Text("Sign Up"),
                             ),
                             // Invisible Box
                             const SizedBox(height: 20),

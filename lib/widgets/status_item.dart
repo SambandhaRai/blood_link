@@ -26,18 +26,16 @@ class StatusItem extends StatelessWidget {
             Text(
               status,
               style: const TextStyle(
-                fontFamily: 'Bricolage Grotesque',
+                fontFamily: 'BricolageGrotesque Bold',
                 fontSize: 18,
-                fontWeight: FontWeight.w700,
                 color: Colors.black,
               ),
             ),
             Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Bricolage Grotesque',
+                fontFamily: 'BricolageGrotesque Light',
                 fontSize: 18,
-                fontWeight: FontWeight.w300,
                 color: Colors.grey,
               ),
             ),

@@ -1,7 +1,6 @@
-import 'package:blood_link/screens/home_screen.dart';
+import 'package:blood_link/screens/bottom_screen_layout.dart';
 import 'package:blood_link/screens/on_boarding_screen.dart';
 import 'package:blood_link/screens/sign_up_screen.dart';
-import 'package:blood_link/widgets/my_button_1.dart';
 import 'package:blood_link/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const BottomScreenLayout()),
       );
     }
   }
@@ -127,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             "Login",
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                              fontFamily: 'Bricolage Grotesque',
+                              fontFamily: 'BricolageGrotesque SemiBold',
                               fontSize: 40,
                               fontWeight: FontWeight.w600,
                             ),
@@ -141,9 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               text: "Don't have an account?",
                               style: const TextStyle(
                                 color: Colors.grey,
-                                fontFamily: 'Bricolage Grotesque',
+                                fontFamily: 'BricolageGrotesque ExtraLight',
                                 fontSize: 15,
-                                fontWeight: FontWeight.w200,
                               ),
                               children: [
                                 TextSpan(
@@ -221,9 +219,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Text(
                                     "Remember Me",
                                     style: TextStyle(
-                                      fontFamily: 'Bricolage Grotesque',
+                                      fontFamily:
+                                          'BricolageGrotesque ExtraLight',
                                       fontSize: 14,
-                                      fontWeight: FontWeight.w200,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -238,10 +236,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: const Text(
                                   "Forgot Password?",
                                   style: TextStyle(
-                                    fontFamily: 'Bricolage Grotesque',
+                                    fontFamily: 'BricolageGrotesque SemiBold',
                                     fontSize: 14,
                                     color: Color(0xFFA72636),
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -250,7 +247,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 20),
 
                           // Login Button
-                          MyButton1(onPressed: login, text: "Login"),
+                          ElevatedButton(
+                            onPressed: login,
+                            child: Text("Login"),
+                          ),
                         ],
                       ),
                     ),

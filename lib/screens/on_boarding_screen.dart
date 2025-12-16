@@ -1,5 +1,4 @@
 import 'package:blood_link/screens/login_screen.dart';
-import 'package:blood_link/widgets/my_button_1.dart';
 import 'package:blood_link/widgets/on_boarding_dots.dart';
 import 'package:flutter/material.dart';
 
@@ -84,9 +83,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           child: Text(
                             item["title"]!,
                             style: const TextStyle(
-                              fontFamily: 'Bricolage Grotesque',
+                              fontFamily: 'BricolageGrotesque SemiBold',
                               fontSize: 28,
-                              fontWeight: FontWeight.w600,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -100,9 +98,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           child: Text(
                             item["subtitle"]!,
                             style: const TextStyle(
-                              fontFamily: 'Bricolage Grotesque',
+                              fontFamily: 'BricolageGrotesque ExtraLight',
                               fontSize: 18,
-                              fontWeight: FontWeight.w200,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -123,7 +120,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
 
                     SizedBox(height: screenHeight * 0.02),
 
-                    MyButton1(
+                    ElevatedButton(
                       onPressed: () {
                         if (_currentIndex == onboardingData.length - 1) {
                           Navigator.pushReplacement(
@@ -139,9 +136,11 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                           );
                         }
                       },
-                      text: _currentIndex == onboardingData.length - 1
-                          ? "Get Started"
-                          : "Next",
+                      child: Text(
+                        _currentIndex == onboardingData.length - 1
+                            ? "Get Started"
+                            : "Next",
+                      ),
                     ),
 
                     SizedBox(height: screenHeight * 0.03),
