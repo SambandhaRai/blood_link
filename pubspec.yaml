@@ -77,22 +77,33 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Bricolage Grotesque
+    - family: BricolageGrotesque Regular
       fonts:
         - asset: assets/fonts/BricolageGrotesque-Regular.ttf
-          weight: 400
+
+    - family: BricolageGrotesque Light
+      fonts:
         - asset: assets/fonts/BricolageGrotesque-Light.ttf
-          weight: 300
+    
+    - family: BricolageGrotesque ExtraLight
+      fonts:
         - asset: assets/fonts/BricolageGrotesque-ExtraLight.ttf
-          weight: 200
+
+    - family: BricolageGrotesque Medium
+      fonts:
         - asset: assets/fonts/BricolageGrotesque-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/BricolageGrotesque-Bold.ttf
-          weight: 700
+
+    - family: BricolageGrotesque SemiBold
+      fonts:
         - asset: assets/fonts/BricolageGrotesque-SemiBold.ttf
-          weight: 600
+
+    - family: BricolageGrotesque Bold
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Bold.ttf
+
+    - family: BricolageGrotesque ExtraBold
+      fonts:
         - asset: assets/fonts/BricolageGrotesque-ExtraBold.ttf
-          weight: 800
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
