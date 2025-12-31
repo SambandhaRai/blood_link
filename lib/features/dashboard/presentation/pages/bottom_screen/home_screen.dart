@@ -1,6 +1,6 @@
-import 'package:blood_link/common/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/models/request_model.dart';
-import 'package:blood_link/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 

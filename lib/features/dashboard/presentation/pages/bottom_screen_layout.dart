@@ -41,7 +41,7 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
                         Stack(
                           children: const [
                             CircleAvatar(
-                              radius: 24, // SAME as before
+                              radius: 24,
                               backgroundColor: Colors.white,
                               child: Text('S', style: TextStyle(fontSize: 24)),
                             ),

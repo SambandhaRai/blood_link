@@ -1,5 +1,5 @@
-import 'package:blood_link/screens/splash_screen.dart';
-import 'package:blood_link/theme/theme_data.dart';
+import 'package:blood_link/features/splash/presentation/pages/splash_page.dart';
+import 'package:blood_link/app/theme/theme_data.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -9,7 +9,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: SplashPage(),
       theme: getApplicationTheme(),
     );
   }

@@ -1,18 +1,18 @@
-import 'package:blood_link/screens/bottom_screen_layout.dart';
-import 'package:blood_link/screens/on_boarding_screen.dart';
-import 'package:blood_link/screens/sign_up_screen.dart';
+import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen_layout.dart';
+import 'package:blood_link/features/onboarding/presentation/pages/on_boarding_page.dart';
+import 'package:blood_link/features/auth/presentation/pages/signup_page.dart';
 import 'package:blood_link/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
 
@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const OnBoardingScreen(),
+                                builder: (context) => const OnBoardingPage(),
                               ),
                             );
                           },
@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              const SignUpScreen(),
+                                              const SignUpPage(),
                                         ),
                                       );
                                     },

@@ -1,4 +1,4 @@
-import 'package:blood_link/app.dart';
+import 'package:blood_link/app/app.dart';
 import 'package:flutter/material.dart';
 
 void main() {

@@ -1,17 +1,17 @@
-import 'package:blood_link/screens/login_screen.dart';
+import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
 import 'package:blood_link/widgets/my_multi_line_text_form_field.dart';
 import 'package:blood_link/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   String? _gender;
@@ -84,7 +84,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const LoginScreen(),
+                                    builder: (context) => const LoginPage(),
                                   ),
                                 );
                               },
@@ -158,7 +158,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                const LoginScreen(),
+                                                const LoginPage(),
                                           ),
                                         );
                                       },
