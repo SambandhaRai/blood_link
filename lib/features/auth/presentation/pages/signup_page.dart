@@ -13,6 +13,7 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   String? _gender;
   String? _bloodGroup;
@@ -175,6 +176,16 @@ class _SignUpPageState extends State<SignUpPage> {
                               labelText: "Full Name",
                               hintText: "Full Name",
                               errorMessage: "Please enter your full name",
+                            ),
+                            // Invisible Box
+                            const SizedBox(height: 20),
+
+                            // Phone Number Input
+                            MyTextFormField(
+                              controller: _phoneController,
+                              labelText: "Phone Number",
+                              hintText: "Enter your phone number",
+                              errorMessage: "Please enter a valid phone number",
                             ),
                             // Invisible Box
                             const SizedBox(height: 20),
