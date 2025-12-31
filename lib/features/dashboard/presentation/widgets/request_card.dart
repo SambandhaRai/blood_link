@@ -1,4 +1,4 @@
-import 'package:blood_link/widgets/my_outlined_button.dart';
+import 'package:blood_link/core/widgets/my_outlined_button.dart';
 import 'package:flutter/material.dart';
 
 class RequestCard extends StatelessWidget {

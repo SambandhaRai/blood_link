@@ -1,7 +1,7 @@
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen_layout.dart';
 import 'package:blood_link/features/onboarding/presentation/pages/on_boarding_page.dart';
 import 'package:blood_link/features/auth/presentation/pages/signup_page.dart';
-import 'package:blood_link/widgets/my_text_form_field.dart';
+import 'package:blood_link/core/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 

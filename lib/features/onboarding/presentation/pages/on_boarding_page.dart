@@ -1,5 +1,5 @@
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
-import 'package:blood_link/widgets/on_boarding_dots.dart';
+import 'package:blood_link/core/widgets/on_boarding_dots.dart';
 import 'package:flutter/material.dart';
 
 class OnBoardingPage extends StatefulWidget {

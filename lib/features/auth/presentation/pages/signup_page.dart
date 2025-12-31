@@ -1,6 +1,6 @@
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
-import 'package:blood_link/widgets/my_multi_line_text_form_field.dart';
-import 'package:blood_link/widgets/my_text_form_field.dart';
+import 'package:blood_link/core/widgets/my_multi_line_text_form_field.dart';
+import 'package:blood_link/core/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
