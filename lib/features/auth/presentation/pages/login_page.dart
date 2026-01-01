@@ -1,18 +1,23 @@
+import 'package:blood_link/app/routes/app_routes.dart';
+import 'package:blood_link/core/utils/snackbar_utils.dart';
+import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
+import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen_layout.dart';
 import 'package:blood_link/features/onboarding/presentation/pages/on_boarding_page.dart';
 import 'package:blood_link/features/auth/presentation/pages/signup_page.dart';
 import 'package:blood_link/core/widgets/my_text_form_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pwController = TextEditingController();
 
@@ -31,18 +36,28 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void login() {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const BottomScreenLayout()),
-      );
+      await ref
+          .read(authViewmodelProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _pwController.text.trim(),
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        AppRoutes.pushReplacement(context, BottomScreenLayout());
+      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
+        SnackbarUtils.showError(context, next.errorMessage!);
+      }
+    });
 
     return Scaffold(
       body: Container(
@@ -148,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                                   text: " Sign Up",
                                   style: const TextStyle(
                                     color: Color(0xFFA72636),
-                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "BricolageGrotesque SemiBold",
                                   ),
                                   recognizer: _tapGestureRecognizer
                                     ..onTap = () {
@@ -171,7 +186,17 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _emailController,
                             labelText: "Enter your email",
                             hintText: "abc@gmail.com",
-                            errorMessage: "Please enter valid email address",
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
 
@@ -180,8 +205,6 @@ class _LoginPageState extends State<LoginPage> {
                             controller: _pwController,
                             labelText: "Enter your password",
                             hintText: "Password",
-                            errorMessage:
-                                "Wrong email or password. Please try again",
                             obscureText: _obscurePassword,
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -196,6 +219,15 @@ class _LoginPageState extends State<LoginPage> {
                                 });
                               },
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a password';
+                              }
+                              if (value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 10),
 
@@ -248,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
 
                           // Login Button
                           ElevatedButton(
-                            onPressed: login,
+                            onPressed: _handleLogin,
                             child: Text("Login"),
                           ),
                         ],

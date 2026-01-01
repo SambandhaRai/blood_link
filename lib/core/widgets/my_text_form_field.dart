@@ -6,17 +6,19 @@ class MyTextFormField extends StatelessWidget {
     required this.controller,
     required this.labelText,
     required this.hintText,
-    required this.errorMessage,
+    this.errorMessage,
     this.obscureText = false,
     this.suffixIcon,
+    this.validator,
   });
 
   final TextEditingController controller;
   final String labelText;
   final String hintText;
-  final String errorMessage;
+  final String? errorMessage;
   final bool obscureText;
   final Widget? suffixIcon;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +41,14 @@ class MyTextFormField extends StatelessWidget {
         ),
         suffixIcon: suffixIcon,
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return errorMessage;
-        }
-        return null;
-      },
+      validator:
+          validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return errorMessage;
+            }
+            return null;
+          },
     );
   }
 }
