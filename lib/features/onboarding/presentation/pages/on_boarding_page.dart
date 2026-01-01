@@ -50,6 +50,28 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
+              // TOP BAR (Skip button)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Skip",
+                    style: TextStyle(
+                      color: Color(0xFFA72636),
+                      fontSize: 18,
+                      fontFamily: "BricolageGrotesque SemiBold",
+                    ),
+                  ),
+                ),
+              ),
               // TOP CONTENT (image + texts)
               Expanded(
                 flex: 7,
