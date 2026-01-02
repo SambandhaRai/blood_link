@@ -30,6 +30,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   final TapGestureRecognizer _tapGestureRecognizer = TapGestureRecognizer();
 
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   final List<String> _genders = ['Male', 'Female', 'Others'];
   final List<String> _bloodGroups = [
@@ -515,22 +516,23 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                               ),
                               const SizedBox(height: 20),
 
-                              // Confirm Password (still using same controller as your code)
+                              // Confirm Password
                               MyTextFormField(
                                 controller: _confirmPwController,
                                 labelText: "Confirm your password",
                                 hintText: "Re-enter your password",
-                                obscureText: _obscurePassword,
+                                obscureText: _obscureConfirmPassword,
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    _obscurePassword
+                                    _obscureConfirmPassword
                                         ? Icons.visibility_off
                                         : Icons.visibility,
                                     color: Colors.grey,
                                   ),
                                   onPressed: () {
                                     setState(() {
-                                      _obscurePassword = !_obscurePassword;
+                                      _obscureConfirmPassword =
+                                          !_obscureConfirmPassword;
                                     });
                                   },
                                 ),

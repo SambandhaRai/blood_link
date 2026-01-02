@@ -50,7 +50,10 @@ class AuthViewmodel extends Notifier<AuthState> {
       },
       (isRegistered) {
         if (isRegistered) {
-          state = state.copyWith(status: AuthStatus.registered);
+          state = state.copyWith(
+            status: AuthStatus.registered,
+            errorMessage: null,
+          );
         } else {
           state = state.copyWith(
             status: AuthStatus.error,
@@ -77,6 +80,7 @@ class AuthViewmodel extends Notifier<AuthState> {
         state = state.copyWith(
           status: AuthStatus.authenticated,
           authEntity: authEntity,
+          errorMessage: null,
         );
       },
     );
