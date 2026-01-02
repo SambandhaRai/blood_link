@@ -52,10 +52,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
-      if (next.status == AuthStatus.authenticated) {
-        AppRoutes.pushReplacement(context, BottomScreenLayout());
-      } else if (next.status == AuthStatus.error && next.errorMessage != null) {
+      if (next.status == AuthStatus.error && next.errorMessage != null) {
         SnackbarUtils.showError(context, next.errorMessage!);
+      } else if (next.status == AuthStatus.authenticated) {
+        AppRoutes.pushReplacement(context, BottomScreenLayout());
       }
     });
 
@@ -163,6 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   text: " Sign Up",
                                   style: const TextStyle(
                                     color: Color(0xFFA72636),
+                                    fontSize: 15,
                                     fontFamily: "BricolageGrotesque SemiBold",
                                   ),
                                   recognizer: _tapGestureRecognizer
