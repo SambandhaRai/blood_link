@@ -18,10 +18,6 @@ class HiveService {
     _registerAdapter();
   }
 
-  Future<void> insertDummybatches() async {
-    await Hive.openBox<AuthHiveModel>(HiveTableConstant.authTable);
-  }
-
   // Register Adapter
   void _registerAdapter() {
     if (!Hive.isAdapterRegistered(HiveTableConstant.authTypeId)) {
@@ -39,7 +35,7 @@ class HiveService {
     await Hive.close();
   }
 
-  // ====================== Batch Queries ======================
+  // ====================== Auth Queries ======================
   Box<AuthHiveModel> get _authBox =>
       Hive.box<AuthHiveModel>(HiveTableConstant.authTable);
 
