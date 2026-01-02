@@ -142,10 +142,9 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
           next.errorMessage ?? "Registration Failed",
         );
       } else if (next.status == AuthStatus.registered) {
-        SnackbarUtils.showSuccess(
-          context,
-          next.errorMessage ?? "Registration Successfull",
-        );
+        // Clear any previous snackbars and show a clear success message
+        ScaffoldMessenger.of(context).clearSnackBars();
+        SnackbarUtils.showSuccess(context, "Registration Successful");
       }
     });
 
