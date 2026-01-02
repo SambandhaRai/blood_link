@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
 
-class MyMultiLineTextFormField extends StatelessWidget {
-  const MyMultiLineTextFormField({
+class MyTextFormField extends StatelessWidget {
+  const MyTextFormField({
     super.key,
     required this.controller,
     required this.labelText,
     required this.hintText,
-    required this.errorMessage,
-    this.maxLines = 3, // default height
+    this.errorMessage,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.validator,
   });
 
   final TextEditingController controller;
   final String labelText;
   final String hintText;
-  final String errorMessage;
-  final int? maxLines;
+  final String? errorMessage;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      maxLines: maxLines,
+      obscureText: obscureText,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: const TextStyle(color: Colors.grey),
@@ -35,17 +39,16 @@ class MyMultiLineTextFormField extends StatelessWidget {
           borderSide: const BorderSide(color: Color(0xFFA72636), width: 1.5),
           borderRadius: BorderRadius.circular(12),
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 18,
-        ),
+        suffixIcon: suffixIcon,
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return errorMessage;
-        }
-        return null;
-      },
+      validator:
+          validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return errorMessage;
+            }
+            return null;
+          },
     );
   }
 }
