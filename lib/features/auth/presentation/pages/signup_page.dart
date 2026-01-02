@@ -294,7 +294,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                   if (value == null || value.isEmpty) {
                                     return "Phone number is required";
                                   }
-                                  if (value.length < 10) {
+                                  if (value.length < 10 || value.length > 10) {
                                     return "Enter a valid phone number";
                                   }
                                   return null;
