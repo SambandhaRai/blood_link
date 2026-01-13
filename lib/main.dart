@@ -8,9 +8,7 @@ Future<void> main() async {
 
   final container = ProviderContainer();
 
-  // Initialize Hive service and open boxes before the app runs
-  await container.read(hiveServiceProvider).init();
-  await container.read(hiveServiceProvider).openBoxes();
+  await HiveService().init();
 
   runApp(UncontrolledProviderScope(container: container, child: const App()));
 }

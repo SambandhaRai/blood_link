@@ -5,10 +5,10 @@ import 'package:uuid/uuid.dart';
 
 part 'auth_hive_model.g.dart';
 
-@HiveType(typeId: HiveTableConstant.authTypeId)
+@HiveType(typeId: HiveTableConstant.userTypeId)
 class AuthHiveModel extends HiveObject {
   @HiveField(0)
-  final String? authId;
+  final String? userId;
 
   @HiveField(1)
   final String fullName;
@@ -23,7 +23,7 @@ class AuthHiveModel extends HiveObject {
   final String gender;
 
   @HiveField(5)
-  final String bloodGroup;
+  final String? bloodId;
 
   @HiveField(6)
   final String? healthCondition;
@@ -38,27 +38,27 @@ class AuthHiveModel extends HiveObject {
   final String? profilePicture;
 
   AuthHiveModel({
-    String? authId,
+    String? userId,
     required this.fullName,
     required this.phoneNumber,
     required this.dob,
     required this.gender,
-    required this.bloodGroup,
+    this.bloodId,
     this.healthCondition,
     required this.email,
     this.password,
     this.profilePicture,
-  }) : authId = authId ?? Uuid().v4();
+  }) : userId = userId ?? Uuid().v4();
 
   // fromEntity
   factory AuthHiveModel.fromEntity(AuthEntity entity) {
     return AuthHiveModel(
-      authId: entity.authId,
+      userId: entity.userId,
       fullName: entity.fullName,
       phoneNumber: entity.phoneNumber,
       dob: entity.dob,
       gender: entity.gender,
-      bloodGroup: entity.bloodGroup,
+      bloodId: entity.bloodId,
       healthCondition: entity.healthCondition,
       email: entity.email,
       password: entity.password,
@@ -69,12 +69,12 @@ class AuthHiveModel extends HiveObject {
   // toEntity
   AuthEntity toEntity() {
     return AuthEntity(
-      authId: authId,
+      userId: userId,
       fullName: fullName,
       phoneNumber: phoneNumber,
       dob: dob,
       gender: gender,
-      bloodGroup: bloodGroup,
+      bloodId: bloodId,
       healthCondition: healthCondition,
       email: email,
       password: password,

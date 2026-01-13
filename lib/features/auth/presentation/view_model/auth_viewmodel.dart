@@ -25,7 +25,7 @@ class AuthViewmodel extends Notifier<AuthState> {
     required String phoneNumber,
     required String dob,
     required String gender,
-    required String bloodGroup,
+    String? bloodId,
     String? healthCondition,
     required String email,
     required String password,
@@ -36,7 +36,7 @@ class AuthViewmodel extends Notifier<AuthState> {
       phoneNumber: phoneNumber,
       dob: dob,
       gender: gender,
-      bloodGroup: bloodGroup,
+      bloodId: bloodId,
       email: email,
       password: password,
     );

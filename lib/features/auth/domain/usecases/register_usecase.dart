@@ -12,7 +12,7 @@ class RegisterUsecaseParams extends Equatable {
   final String phoneNumber;
   final String dob;
   final String gender;
-  final String bloodGroup;
+  final String? bloodId;
   final String? healthCondition;
   final String email;
   final String password;
@@ -22,7 +22,7 @@ class RegisterUsecaseParams extends Equatable {
     required this.phoneNumber,
     required this.dob,
     required this.gender,
-    required this.bloodGroup,
+    required this.bloodId,
     this.healthCondition,
     required this.email,
     required this.password,
@@ -34,7 +34,7 @@ class RegisterUsecaseParams extends Equatable {
     phoneNumber,
     dob,
     gender,
-    bloodGroup,
+    bloodId,
     healthCondition,
     email,
     password,
@@ -61,7 +61,7 @@ class RegisterUsecase
       phoneNumber: params.phoneNumber,
       dob: params.dob,
       gender: params.gender,
-      bloodGroup: params.bloodGroup,
+      bloodId: params.bloodId,
       healthCondition: params.healthCondition,
       email: params.email,
       password: params.password,
