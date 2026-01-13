@@ -7,7 +7,7 @@ import 'package:blood_link/features/auth/domain/repositories/auth_repository.dar
 import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
+final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   return AuthRepository(authDatasource: ref.read(authLocalDatasourceProvider));
 });
 
