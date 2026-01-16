@@ -101,6 +101,26 @@ class HiveService {
     return users.isNotEmpty;
   }
 
+  // Get User by Email
+  AuthHiveModel? getUserByEmail(String email) {
+    try {
+      return _authBox.values.firstWhere((user) => user.email == email);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Get User by Phone
+  AuthHiveModel? getUserByPhoneNumber(String phoneNumber) {
+    try {
+      return _authBox.values.firstWhere(
+        (user) => user.phoneNumber == phoneNumber,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
   // ====================== Blood Group Queries ======================
   Box<BloodHiveModel> get _bloodBox =>
       Hive.box<BloodHiveModel>(HiveTableConstant.bloodTable);

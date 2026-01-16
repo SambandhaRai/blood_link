@@ -13,7 +13,7 @@ final authLocalDatasourceProvider = Provider<AuthLocalDatasource>((ref) {
   );
 });
 
-class AuthLocalDatasource implements IAuthDatasource {
+class AuthLocalDatasource implements IAuthLocalDatasource {
   final HiveService _hiveService;
   final UserSessionService _userSessionService;
 
@@ -64,13 +64,8 @@ class AuthLocalDatasource implements IAuthDatasource {
   }
 
   @override
-  Future<bool> register(AuthHiveModel model) async {
-    try {
-      await _hiveService.registerUser(model);
-      return Future.value(true);
-    } catch (e) {
-      return Future.value(false);
-    }
+  Future<AuthHiveModel> register(AuthHiveModel model) async {
+    return await _hiveService.registerUser(model);
   }
 
   @override
@@ -80,6 +75,24 @@ class AuthLocalDatasource implements IAuthDatasource {
       return Future.value(true);
     } catch (e) {
       return Future.value(false);
+    }
+  }
+
+  @override
+  Future<AuthHiveModel?> getUserByEmail(String email) async {
+    try {
+      return _hiveService.getUserByEmail(email);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<AuthHiveModel?> getUserByPhoneNumber(String phoneNumber) async {
+    try {
+      return _hiveService.getUserByPhoneNumber(phoneNumber);
+    } catch (e) {
+      return null;
     }
   }
 }

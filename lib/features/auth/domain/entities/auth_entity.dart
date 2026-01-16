@@ -10,6 +10,7 @@ class AuthEntity extends Equatable {
   final String? healthCondition;
   final String email;
   final String? password;
+  final String? confirmPassword;
   final String? profilePicture;
 
   const AuthEntity({
@@ -22,6 +23,7 @@ class AuthEntity extends Equatable {
     this.healthCondition,
     required this.email,
     this.password,
+    this.confirmPassword,
     this.profilePicture,
   });
 
@@ -36,6 +38,7 @@ class AuthEntity extends Equatable {
     healthCondition,
     email,
     password,
+    confirmPassword,
     profilePicture,
   ];
 }
