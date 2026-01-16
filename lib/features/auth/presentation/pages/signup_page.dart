@@ -49,6 +49,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     _healthConditionController.dispose();
     _emailController.dispose();
     _pwController.dispose();
+    _confirmPwController.dispose();
     _tapGestureRecognizer.dispose();
     super.dispose();
   }
@@ -112,8 +113,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             dob: _dobController.text,
             gender: _gender ?? "",
             bloodId: _selectedBloodGroup,
+            healthCondition: _healthConditionController.text.trim(),
             email: _emailController.text.trim(),
             password: _pwController.text.trim(),
+            confirmPassword: _confirmPwController.text.trim(),
           );
     }
   }
