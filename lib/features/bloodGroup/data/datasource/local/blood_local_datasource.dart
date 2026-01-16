@@ -7,7 +7,7 @@ final bloodLocalDatasourceProvider = Provider<BloodLocalDatasource>((ref) {
   return BloodLocalDatasource(hiveService: ref.read(hiveServiceProvider));
 });
 
-class BloodLocalDatasource implements IBloodDatasource {
+class BloodLocalDatasource implements IBloodLocalDatasource {
   final HiveService _hiveService;
 
   BloodLocalDatasource({required HiveService hiveService})
