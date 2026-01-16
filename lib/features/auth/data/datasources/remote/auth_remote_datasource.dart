@@ -1,17 +1,26 @@
 import 'package:blood_link/core/api/api_client.dart';
 import 'package:blood_link/core/api/api_endpoints.dart';
+import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/features/auth/data/datasources/auth_datasource.dart';
 import 'package:blood_link/features/auth/data/models/auth_api_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
-  return AuthRemoteDatasource(apiClient: ref.read(apiClientProvider));
+  return AuthRemoteDatasource(
+    apiClient: ref.read(apiClientProvider),
+    userSessionService: ref.read(userSessionServiceProvider),
+  );
 });
 
 class AuthRemoteDatasource implements IAuthRemoteDatasource {
   final ApiClient _apiClient;
+  final UserSessionService _userSessionService;
 
-  AuthRemoteDatasource({required ApiClient apiClient}) : _apiClient = apiClient;
+  AuthRemoteDatasource({
+    required ApiClient apiClient,
+    required UserSessionService userSessionService,
+  }) : _apiClient = apiClient,
+       _userSessionService = userSessionService;
 
   @override
   Future<AuthApiModel?> getCurrentUser() {
@@ -32,6 +41,19 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
       final user = AuthApiModel.fromJson(data);
+
+      // Save user session to SharedPreferences
+      await _userSessionService.saveUserSession(
+        userId: user.userId!,
+        email: user.email,
+        fullName: user.fullName,
+        gender: user.gender,
+        dob: user.dob,
+        bloodId: user.bloodId,
+        phoneNumber: user.phoneNumber,
+        healthCondition: user.healthCondition,
+        profilePicture: user.profilePicture,
+      );
 
       return user;
     }
