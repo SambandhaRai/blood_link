@@ -12,20 +12,22 @@ class RegisterUsecaseParams extends Equatable {
   final String phoneNumber;
   final String dob;
   final String gender;
-  final String bloodGroup;
+  final String? bloodId;
   final String? healthCondition;
   final String email;
   final String password;
+  final String confirmPassword;
 
   const RegisterUsecaseParams({
     required this.fullName,
     required this.phoneNumber,
     required this.dob,
     required this.gender,
-    required this.bloodGroup,
+    required this.bloodId,
     this.healthCondition,
     required this.email,
     required this.password,
+    required this.confirmPassword,
   });
 
   @override
@@ -34,10 +36,11 @@ class RegisterUsecaseParams extends Equatable {
     phoneNumber,
     dob,
     gender,
-    bloodGroup,
+    bloodId,
     healthCondition,
     email,
     password,
+    confirmPassword,
   ];
 }
 
@@ -61,10 +64,11 @@ class RegisterUsecase
       phoneNumber: params.phoneNumber,
       dob: params.dob,
       gender: params.gender,
-      bloodGroup: params.bloodGroup,
+      bloodId: params.bloodId,
       healthCondition: params.healthCondition,
       email: params.email,
       password: params.password,
+      confirmPassword: params.confirmPassword,
     );
     return _authRepository.register(entity);
   }

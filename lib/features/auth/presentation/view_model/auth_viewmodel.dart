@@ -1,4 +1,5 @@
 import 'package:blood_link/features/auth/domain/usecases/login_usecase.dart';
+import 'package:blood_link/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/register_usecase.dart';
 import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +12,13 @@ final authViewmodelProvider = NotifierProvider<AuthViewmodel, AuthState>(
 class AuthViewmodel extends Notifier<AuthState> {
   late final RegisterUsecase _registerUsecase;
   late final LoginUsecase _loginUsecase;
+  late final LogoutUsecase _logoutUsecase;
 
   @override
   AuthState build() {
     _registerUsecase = ref.read(registerUsecaseProvider);
     _loginUsecase = ref.read(loginUsecaseProvider);
+    _logoutUsecase = ref.read(logoutUsecaseProvider);
     return AuthState();
   }
 
@@ -25,10 +28,11 @@ class AuthViewmodel extends Notifier<AuthState> {
     required String phoneNumber,
     required String dob,
     required String gender,
-    required String bloodGroup,
+    String? bloodId,
     String? healthCondition,
     required String email,
     required String password,
+    required String confirmPassword,
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
     final params = RegisterUsecaseParams(
@@ -36,9 +40,11 @@ class AuthViewmodel extends Notifier<AuthState> {
       phoneNumber: phoneNumber,
       dob: dob,
       gender: gender,
-      bloodGroup: bloodGroup,
+      bloodId: bloodId,
+      healthCondition: healthCondition,
       email: email,
       password: password,
+      confirmPassword: confirmPassword,
     );
     final result = await _registerUsecase(params);
     result.fold(
@@ -83,6 +89,21 @@ class AuthViewmodel extends Notifier<AuthState> {
           errorMessage: null,
         );
       },
+    );
+  }
+
+  // Logout
+  Future<void> logout() async {
+    final result = await _logoutUsecase();
+    result.fold(
+      (failure) => state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: failure.message,
+      ),
+      (success) => state = state.copyWith(
+        status: AuthStatus.unauthenticated,
+        authEntity: null,
+      ),
     );
   }
 }

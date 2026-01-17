@@ -4,6 +4,8 @@ import 'package:blood_link/core/widgets/my_multi_line_text_form_field.dart';
 import 'package:blood_link/core/widgets/my_text_form_field.dart';
 import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
+import 'package:blood_link/features/bloodGroup/presentation/state/blood_group_state.dart';
+import 'package:blood_link/features/bloodGroup/presentation/view_model/blood_group_viewmodel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +22,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
   String? _gender;
-  String? _bloodGroup;
+  String? _selectedBloodGroup;
   final TextEditingController _healthConditionController =
       TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -33,16 +35,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   bool _obscureConfirmPassword = true;
 
   final List<String> _genders = ['Male', 'Female', 'Others'];
-  final List<String> _bloodGroups = [
-    'A+',
-    'A-',
-    'B+',
-    'B-',
-    'O+',
-    'O-',
-    'AB+',
-    'AB-',
-  ];
 
   final _formKey = GlobalKey<FormState>();
 
@@ -57,6 +49,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     _healthConditionController.dispose();
     _emailController.dispose();
     _pwController.dispose();
+    _confirmPwController.dispose();
     _tapGestureRecognizer.dispose();
     super.dispose();
   }
@@ -119,17 +112,29 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
             phoneNumber: _phoneController.text.trim(),
             dob: _dobController.text,
             gender: _gender ?? "",
-            bloodGroup: _bloodGroup ?? " ",
+            bloodId: _selectedBloodGroup,
+            healthCondition: _healthConditionController.text.trim(),
             email: _emailController.text.trim(),
             password: _pwController.text.trim(),
+            confirmPassword: _confirmPwController.text.trim(),
           );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(bloodGroupViewModelProvider.notifier).getAllBloodGroups();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    final bloodGroupState = ref.watch(bloodGroupViewModelProvider);
 
     // auth state
     ref.watch(authViewmodelProvider);
@@ -408,13 +413,17 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
                               // Blood Group Drop Down
                               DropdownButtonFormField(
-                                initialValue: _bloodGroup,
+                                initialValue: _selectedBloodGroup,
                                 decoration: InputDecoration(
                                   labelText: "Blood Group",
                                   labelStyle: const TextStyle(
                                     color: Colors.grey,
                                   ),
-                                  hintText: "Choose your Blood Group",
+                                  hintText:
+                                      bloodGroupState.status ==
+                                          BloodGroupStatus.loading
+                                      ? "Loading Blood Group..."
+                                      : "Choose your Blood Group",
                                   hintStyle: const TextStyle(
                                     color: Colors.grey,
                                   ),
@@ -440,18 +449,15 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                     vertical: 18,
                                   ),
                                 ),
-                                items: _bloodGroups
-                                    .map(
-                                      (String blood) =>
-                                          DropdownMenuItem<String>(
-                                            value: blood,
-                                            child: Text(blood),
-                                          ),
-                                    )
-                                    .toList(),
-                                onChanged: (String? newValue) {
+                                items: bloodGroupState.bloodGroups.map((blood) {
+                                  return DropdownMenuItem<String>(
+                                    value: blood.bloodId,
+                                    child: Text(blood.bloodGroup),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
                                   setState(() {
-                                    _bloodGroup = newValue;
+                                    _selectedBloodGroup = value;
                                   });
                                 },
                               ),
