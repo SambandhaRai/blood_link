@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:blood_link/core/error/failures.dart';
 import 'package:blood_link/core/services/connectivity/network_info.dart';
 import 'package:blood_link/features/auth/data/datasources/auth_datasource.dart';
@@ -33,9 +35,31 @@ class AuthRepository implements IAuthRepository {
        _networkInfo = networkInfo;
 
   @override
-  Future<Either<Failure, AuthEntity>> getCurrentUser() {
-    // TODO: implement getCurrentUser
-    throw UnimplementedError();
+  Future<Either<Failure, AuthEntity>> getCurrentUser() async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final apiModel = await _authRemoteDatasource.getCurrentUser();
+        if (apiModel != null) {
+          final entity = apiModel.toEntity();
+          return Right(entity);
+        }
+        return Left(ApiFailure(message: "User Not Found"));
+      } on DioException catch (e) {
+        return Left(
+          ApiFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data?["message"] ??
+                e.message ??
+                "Failed to fetch user",
+          ),
+        );
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      return Left(ApiFailure(message: "No InternetConnect"));
+    }
   }
 
   @override
@@ -55,7 +79,7 @@ class AuthRepository implements IAuthRepository {
         return Left(
           ApiFailure(
             statusCode: e.response?.statusCode,
-            message: e.response?.data['message'] ?? "Login Failed",
+            message: e.response?.data['message'] ?? e.message ?? "Login Failed",
           ),
         );
       } catch (e) {
@@ -88,7 +112,10 @@ class AuthRepository implements IAuthRepository {
         return Left(
           ApiFailure(
             statusCode: e.response?.statusCode,
-            message: e.response?.data['message'] ?? "Registration Failed",
+            message:
+                e.response?.data['message'] ??
+                e.message ??
+                "Registration Failed",
           ),
         );
       } catch (e) {
@@ -141,6 +168,30 @@ class AuthRepository implements IAuthRepository {
       return Left(LocalDatabaseFailure(message: "Failed to logout user"));
     } catch (e) {
       return Left(LocalDatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String?>> uploadProfilePicture(File image) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final fileName = await _authRemoteDatasource.uploadProfilePicture(
+          image,
+        );
+        return Right(fileName);
+      } on DioException catch (e) {
+        return Left(
+          ApiFailure(
+            statusCode: e.response?.statusCode,
+            message:
+                e.response?.data?["message"] ?? e.message ?? "Upload Failed",
+          ),
+        );
+      } catch (e) {
+        return Left(ApiFailure(message: e.toString()));
+      }
+    } else {
+      return Left(ApiFailure(message: "No Internet Connection"));
     }
   }
 }
