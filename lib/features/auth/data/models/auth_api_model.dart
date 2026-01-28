@@ -1,6 +1,11 @@
 import 'package:blood_link/features/auth/domain/entities/auth_entity.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'auth_api_model.g.dart';
+
+@JsonSerializable()
 class AuthApiModel {
+  @JsonKey(name: "_id")
   final String? userId;
   final String fullName;
   final String phoneNumber;
@@ -27,56 +32,41 @@ class AuthApiModel {
     this.profilePicture,
   });
 
-  String _toIsoDob(String value) {
-    // If already ISO (YYYY-MM-DD), return as-is
-    final iso = RegExp(r'^\d{4}-\d{2}-\d{2}$');
-    if (iso.hasMatch(value.trim())) return value.trim();
-
-    // If it's "DD / MM / YYYY", convert to "YYYY-MM-DD"
-    final parts = value.split('/').map((e) => e.trim()).toList();
-    if (parts.length == 3) {
-      final dd = parts[0].padLeft(2, '0');
-      final mm = parts[1].padLeft(2, '0');
-      final yyyy = parts[2];
-      return "$yyyy-$mm-$dd";
-    }
-
-    // Fallback: send as-is
-    return value.trim();
-  }
-
   // toJson
-  Map<String, dynamic> toJson() {
-    return {
-      "fullName": fullName,
-      "phoneNumber": phoneNumber,
-      "dob": _toIsoDob(dob),
-      "gender": gender,
-      "bloodId": bloodId,
-      "healthCondition": healthCondition,
-      "email": email,
-      "password": password,
-      "confirmPassword": confirmPassword,
-      "profilePicture": profilePicture,
-    };
-  }
+  Map<String, dynamic> toJson() => _$AuthApiModelToJson(this);
+  // {
+  //   return {
+  //     "fullName": fullName,
+  //     "phoneNumber": phoneNumber,
+  //     "dob": _toIsoDob(dob),
+  //     "gender": gender,
+  //     "bloodId": bloodId,
+  //     "healthCondition": healthCondition,
+  //     "email": email,
+  //     "password": password,
+  //     "confirmPassword": confirmPassword,
+  //     "profilePicture": profilePicture,
+  //   };
+  // }
 
   // fromJson
-  factory AuthApiModel.fromJson(Map<String, dynamic> json) {
-    return AuthApiModel(
-      userId: json['_id'] as String?,
-      fullName: json['fullName'] as String,
-      phoneNumber: json['phoneNumber'] as String,
-      dob: json['dob'] as String,
-      gender: json['gender'] as String,
-      bloodId: json['bloodId'] as String?,
-      healthCondition: json['healthCondition'] as String?,
-      email: json['email'] as String,
-      password: json['password'] as String?,
-      confirmPassword: json['confirmPassword'] as String?,
-      profilePicture: json['profilePicture'] as String?,
-    );
-  }
+  factory AuthApiModel.fromJson(Map<String, dynamic> json) =>
+      _$AuthApiModelFromJson(json);
+  // {
+  //   return AuthApiModel(
+  //     userId: json['_id'] as String?,
+  //     fullName: json['fullName'] as String,
+  //     phoneNumber: json['phoneNumber'] as String,
+  //     dob: json['dob'] as String,
+  //     gender: json['gender'] as String,
+  //     bloodId: json['bloodId'] as String?,
+  //     healthCondition: json['healthCondition'] as String?,
+  //     email: json['email'] as String,
+  //     password: json['password'] as String?,
+  //     confirmPassword: json['confirmPassword'] as String?,
+  //     profilePicture: json['profilePicture'] as String?,
+  //   );
+  // }
 
   // toEntity
   AuthEntity toEntity() {

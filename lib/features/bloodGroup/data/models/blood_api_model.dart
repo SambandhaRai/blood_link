@@ -1,23 +1,22 @@
 import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'blood_api_model.g.dart';
+
+@JsonSerializable()
 class BloodApiModel {
+  @JsonKey(name: "_id")
   final String? bloodId;
   final String bloodGroup;
 
   BloodApiModel({this.bloodId, required this.bloodGroup});
 
   // toJson
-  Map<String, dynamic> toJson() {
-    return {"bloodGroup": bloodGroup};
-  }
+  Map<String, dynamic> toJson() => _$BloodApiModelToJson(this);
 
   // fromJson
-  factory BloodApiModel.fromJson(Map<String, dynamic> json) {
-    return BloodApiModel(
-      bloodId: json['_id'] as String,
-      bloodGroup: json['bloodGroup'] as String,
-    );
-  }
+  factory BloodApiModel.fromJson(Map<String, dynamic> json) =>
+      _$BloodApiModelFromJson(json);
 
   // toEntity
   BloodEntity toEntity() {
