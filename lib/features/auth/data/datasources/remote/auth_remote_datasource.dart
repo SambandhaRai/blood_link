@@ -1,5 +1,6 @@
 import 'package:blood_link/core/api/api_client.dart';
 import 'package:blood_link/core/api/api_endpoints.dart';
+import 'package:blood_link/core/services/storage/token_service.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/features/auth/data/datasources/auth_datasource.dart';
 import 'package:blood_link/features/auth/data/models/auth_api_model.dart';
@@ -9,18 +10,22 @@ final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
   return AuthRemoteDatasource(
     apiClient: ref.read(apiClientProvider),
     userSessionService: ref.read(userSessionServiceProvider),
+    tokenService: ref.read(tokenServiceProvider),
   );
 });
 
 class AuthRemoteDatasource implements IAuthRemoteDatasource {
   final ApiClient _apiClient;
   final UserSessionService _userSessionService;
+  final TokenService _tokenService;
 
   AuthRemoteDatasource({
     required ApiClient apiClient,
     required UserSessionService userSessionService,
+    required TokenService tokenService,
   }) : _apiClient = apiClient,
-       _userSessionService = userSessionService;
+       _userSessionService = userSessionService,
+       _tokenService = tokenService;
 
   @override
   Future<AuthApiModel?> getCurrentUser() {
@@ -54,6 +59,10 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         healthCondition: user.healthCondition,
         profilePicture: user.profilePicture,
       );
+
+      // save token
+      final token = response.data["token"] as String?;
+      await _tokenService.saveToken(token!);
 
       return user;
     }
