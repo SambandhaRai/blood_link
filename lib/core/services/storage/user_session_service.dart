@@ -121,6 +121,8 @@ class UserSessionService {
     await _prefs.remove(_keyUserPhoneNumber);
     await _prefs.remove(_keyUserGender);
     await _prefs.remove(_keyUserBloodId);
+    await _prefs.remove(_keyUserDob);
+    await _prefs.remove(_keyUserHealthCondition);
     await _prefs.remove(_keyUserProfilePicture);
   }
 }
