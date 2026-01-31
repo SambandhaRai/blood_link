@@ -1,17 +1,20 @@
+import 'package:blood_link/core/api/api_endpoints.dart';
+import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/history_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/home_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/profile_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomScreenLayout extends StatefulWidget {
+class BottomScreenLayout extends ConsumerStatefulWidget {
   const BottomScreenLayout({super.key});
 
   @override
-  State<BottomScreenLayout> createState() => _BottomScreenLayoutState();
+  ConsumerState<BottomScreenLayout> createState() => _BottomScreenLayoutState();
 }
 
-class _BottomScreenLayoutState extends State<BottomScreenLayout> {
+class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
   int _selectedIndex = 0;
 
   List<Widget> listBottomScreen = [
@@ -23,6 +26,18 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final userSessionService = ref.watch(userSessionServiceProvider);
+
+    final userName = userSessionService
+        .getCurrentUserFullName()!
+        .split(" ")
+        .first;
+    final profileFileName = userSessionService.getCurrentUserProfilePicture();
+    final profileImageUrl =
+        (profileFileName != null && profileFileName.isNotEmpty)
+        ? ApiEndpoints.profilePicture(profileFileName)
+        : null;
+
     return Scaffold(
       appBar: _selectedIndex == 0
           ? AppBar(
@@ -39,11 +54,50 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
                     Row(
                       children: [
                         Stack(
-                          children: const [
-                            CircleAvatar(
-                              radius: 24,
-                              backgroundColor: Colors.white,
-                              child: Text('S', style: TextStyle(fontSize: 24)),
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 24,
+                                backgroundColor: Colors.white,
+                                child: ClipOval(
+                                  child: (profileImageUrl != null)
+                                      ? Image.network(
+                                          profileImageUrl,
+                                          width: 48,
+                                          height: 48,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Center(
+                                            child: Text(
+                                              userName.isNotEmpty
+                                                  ? userName[0].toUpperCase()
+                                                  : "U",
+                                              style: const TextStyle(
+                                                fontSize: 24,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            userName.isNotEmpty
+                                                ? userName[0].toUpperCase()
+                                                : "U",
+                                            style: const TextStyle(
+                                              fontSize: 24,
+                                            ),
+                                          ),
+                                        ),
+                                ),
+                              ),
                             ),
                             Positioned(
                               right: 0,
@@ -57,11 +111,11 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
                           ],
                         ),
                         const SizedBox(width: 10),
-                        const Text(
-                          "Hi, Sambandha",
+                        Text(
+                          "Hi, $userName",
                           style: TextStyle(
-                            fontFamily: 'Bricolage Grotesque',
-                            fontSize: 25, // SAME as before
+                            fontFamily: 'BricolageGrotesque SemiBold',
+                            fontSize: 25,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -73,7 +127,7 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
                         IconButton(
                           icon: const Icon(
                             Icons.access_time,
-                            size: 36, // SAME
+                            size: 36,
                             color: Colors.white,
                           ),
                           onPressed: () {},
@@ -81,7 +135,7 @@ class _BottomScreenLayoutState extends State<BottomScreenLayout> {
                         IconButton(
                           icon: const Icon(
                             Icons.notifications_none,
-                            size: 36, // SAME
+                            size: 36,
                             color: Colors.white,
                           ),
                           onPressed: () {},

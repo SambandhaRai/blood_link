@@ -1,12 +1,46 @@
+import 'package:blood_link/core/services/storage/user_session_service.dart';
+import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
+import 'package:blood_link/features/bloodGroup/presentation/view_model/blood_group_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'status_item.dart';
 
-class StatusCard extends StatelessWidget {
+class StatusCard extends ConsumerStatefulWidget {
   const StatusCard({super.key});
 
   @override
+  ConsumerState<StatusCard> createState() => _StatusCardState();
+}
+
+class _StatusCardState extends ConsumerState<StatusCard> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(bloodGroupViewModelProvider.notifier).getAllBloodGroups();
+    });
+  }
+
+  String _getBloodGroupNameById(
+    String? bloodId,
+    List<BloodEntity> bloodGroups,
+  ) {
+    if (bloodId == null) return 'Unknown';
+    try {
+      return bloodGroups.firstWhere((c) => c.bloodId == bloodId).bloodGroup;
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final userSessionService = ref.read(userSessionServiceProvider);
+    final userBloodId = userSessionService.getCurrentUserBloodId();
+
+    final bloodState = ref.watch(bloodGroupViewModelProvider);
+
     return Card(
       color: Colors.white,
       elevation: 10,
@@ -26,7 +60,10 @@ class StatusCard extends StatelessWidget {
                     width: 50,
                     height: 50,
                   ),
-                  status: 'O+',
+                  status: _getBloodGroupNameById(
+                    userBloodId,
+                    bloodState.bloodGroups,
+                  ),
                   label: 'Blood Group',
                 ),
               ),

@@ -2,11 +2,17 @@ import 'package:blood_link/features/dashboard/presentation/widgets/request_card.
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/models/request_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<BloodRequest> requests = const [
     BloodRequest(
       name: "Kim Chaewon",
