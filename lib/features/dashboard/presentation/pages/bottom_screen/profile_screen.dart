@@ -97,6 +97,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     try {
       if (allowMultiple) return;
 
+      bool ok = await _requestPermission(Permission.photos);
+
+      if (!ok) {
+        ok = await _requestPermission(Permission.storage);
+      }
+
+      if (!ok) return;
+
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
