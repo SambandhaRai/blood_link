@@ -1,5 +1,6 @@
 import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
+import 'package:blood_link/features/request/presentation/pages/request_blood_page.dart';
 import 'package:blood_link/models/request_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,7 +91,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                // Find Donors action
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RequestBloodPage(),
+                                  ),
+                                );
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
