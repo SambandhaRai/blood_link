@@ -48,4 +48,10 @@ class ApiEndpoints {
   // =================== Blood Group Endpoints ===================
   static const String bloodGroup = '/bloodGroup';
   static String bloodGroupById(String id) => '/bloodGroup/$id';
+
+  // =================== Requests Endpoints ===================
+  static const String request = "/request";
+
+  // =================== Hospital Endpoints ===================
+  static const String hospital = "/hospital";
 }
