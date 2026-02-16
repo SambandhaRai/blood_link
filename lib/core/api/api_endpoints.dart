@@ -54,4 +54,5 @@ class ApiEndpoints {
 
   // =================== Hospital Endpoints ===================
   static const String hospital = "/hospital";
+  static String hospitalById(String id) => '/hospital/$id';
 }
