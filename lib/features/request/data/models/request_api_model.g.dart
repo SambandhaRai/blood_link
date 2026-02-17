@@ -13,7 +13,11 @@ RequestApiModel _$RequestApiModelFromJson(Map<String, dynamic> json) =>
       recipientDetails: json['recipientDetails'] as String,
       recipientCondition: json['recipientCondition'] as String,
       hospitalId: _extractRequiredId(json['hospitalId']),
-      recipientId: _extractOptionalId(json['recipientId']),
+      postedBy: _extractOptionalId(json['postedBy']),
+      requestFor: json['requestFor'] as String? ?? "self",
+      relationToPatient: json['relationToPatient'] as String?,
+      patientName: json['patientName'] as String?,
+      patientPhone: json['patientPhone'] as String?,
       donorId: _extractOptionalId(json['donorId']),
       requestStatus: json['requestStatus'] as String?,
       createdAt: json['createdAt'] == null
@@ -24,16 +28,29 @@ RequestApiModel _$RequestApiModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$RequestApiModelToJson(RequestApiModel instance) =>
-    <String, dynamic>{
-      '_id': instance.requestId,
-      'recipientBloodId': instance.recipientBloodId,
-      'recipientDetails': instance.recipientDetails,
-      'recipientCondition': instance.recipientCondition,
-      'hospitalId': instance.hospitalId,
-      'recipientId': instance.recipientId,
-      'donorId': instance.donorId,
-      'requestStatus': instance.requestStatus,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$RequestApiModelToJson(RequestApiModel instance) {
+  final val = <String, dynamic>{
+    '_id': instance.requestId,
+    'recipientBloodId': instance.recipientBloodId,
+    'recipientDetails': instance.recipientDetails,
+    'recipientCondition': instance.recipientCondition,
+    'hospitalId': instance.hospitalId,
+    'postedBy': instance.postedBy,
+    'requestFor': instance.requestFor,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('relationToPatient', instance.relationToPatient);
+  writeNotNull('patientName', instance.patientName);
+  writeNotNull('patientPhone', instance.patientPhone);
+  val['donorId'] = instance.donorId;
+  val['requestStatus'] = instance.requestStatus;
+  val['createdAt'] = instance.createdAt?.toIso8601String();
+  val['updatedAt'] = instance.updatedAt?.toIso8601String();
+  return val;
+}

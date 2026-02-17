@@ -23,6 +23,22 @@ String? _extractOptionalId(dynamic value) {
   return value as String?;
 }
 
+RequestForType _requestForFromString(String value) {
+  final normalized = value.trim().toLowerCase();
+  return RequestForType.values.firstWhere(
+    (e) => e.name == normalized,
+    orElse: () => RequestForType.self,
+  );
+}
+
+ConditionType _conditionFromString(String value) {
+  final normalized = value.trim().toLowerCase();
+  return ConditionType.values.firstWhere(
+    (e) => e.name == normalized,
+    orElse: () => ConditionType.urgent,
+  );
+}
+
 @JsonSerializable()
 class RequestApiModel {
   @JsonKey(name: "_id")
@@ -30,15 +46,22 @@ class RequestApiModel {
 
   @JsonKey(fromJson: _extractRequiredId)
   final String recipientBloodId;
-
   final String recipientDetails;
   final String recipientCondition;
-
   @JsonKey(fromJson: _extractRequiredId)
   final String hospitalId;
 
   @JsonKey(fromJson: _extractOptionalId)
-  final String? recipientId;
+  final String? postedBy;
+
+  final String requestFor;
+
+  @JsonKey(includeIfNull: false)
+  final String? relationToPatient;
+  @JsonKey(includeIfNull: false)
+  final String? patientName;
+  @JsonKey(includeIfNull: false)
+  final String? patientPhone;
 
   @JsonKey(fromJson: _extractOptionalId)
   final String? donorId;
@@ -53,22 +76,21 @@ class RequestApiModel {
     required this.recipientDetails,
     required this.recipientCondition,
     required this.hospitalId,
-    this.recipientId,
+    this.postedBy,
+    this.requestFor = "self",
+    this.relationToPatient,
+    this.patientName,
+    this.patientPhone,
     this.donorId,
     this.requestStatus,
     this.createdAt,
     this.updatedAt,
   });
 
-  Map<String, dynamic> toJson() => _$RequestApiModelToJson(this);
-
   factory RequestApiModel.fromJson(Map<String, dynamic> json) =>
       _$RequestApiModelFromJson(json);
 
-  ConditionType _conditionFromString(String value) {
-    final normalized = value.trim().toLowerCase();
-    return ConditionType.values.firstWhere((e) => e.name == normalized);
-  }
+  Map<String, dynamic> toJson() => _$RequestApiModelToJson(this);
 
   RequestEntity toEntity() => RequestEntity(
     requestId: requestId,
@@ -76,9 +98,15 @@ class RequestApiModel {
     recipientDetails: recipientDetails,
     recipientCondition: _conditionFromString(recipientCondition),
     hospitalId: hospitalId,
-    recipientId: recipientId,
+    postedBy: postedBy,
+    requestFor: _requestForFromString(requestFor),
+    relationToPatient: relationToPatient,
+    patientName: patientName,
+    patientPhone: patientPhone,
     donorId: donorId,
     requestStatus: requestStatus,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
   );
 
   factory RequestApiModel.fromEntity(RequestEntity entity) => RequestApiModel(
@@ -87,12 +115,25 @@ class RequestApiModel {
     recipientDetails: entity.recipientDetails,
     recipientCondition: entity.recipientCondition.name,
     hospitalId: entity.hospitalId,
-    recipientId: entity.recipientId,
+    postedBy: entity.postedBy,
+
+    requestFor: entity.requestFor.name,
+    relationToPatient: entity.requestFor == RequestForType.others
+        ? entity.relationToPatient
+        : null,
+    patientName: entity.requestFor == RequestForType.others
+        ? entity.patientName
+        : null,
+    patientPhone: entity.requestFor == RequestForType.others
+        ? entity.patientPhone
+        : null,
+
     donorId: entity.donorId,
     requestStatus: entity.requestStatus,
+    createdAt: entity.createdAt,
+    updatedAt: entity.updatedAt,
   );
 
-  // toEntityList
   static List<RequestEntity> toEntityList(List<RequestApiModel> models) {
     return models.map((model) => model.toEntity()).toList();
   }
