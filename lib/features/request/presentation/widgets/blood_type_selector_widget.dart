@@ -11,11 +11,7 @@ class BloodTypeSelector extends ConsumerStatefulWidget {
   });
 
   final String? initialSelectedBloodId;
-  final void Function({
-    required String bloodId,
-    required String bloodGroupLabel,
-  })
-  onSelected;
+  final void Function(String bloodId) onSelected;
 
   @override
   ConsumerState<BloodTypeSelector> createState() => _BloodTypeSelectorState();
@@ -40,82 +36,69 @@ class _BloodTypeSelectorState extends ConsumerState<BloodTypeSelector> {
   Widget build(BuildContext context) {
     final bloodState = ref.watch(bloodGroupViewModelProvider);
 
-    if (bloodState.status == BloodGroupStatus.loading &&
-        bloodState.bloodGroups.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
+    final isLoading = bloodState.status == BloodGroupStatus.loading;
+    final isError = bloodState.status == BloodGroupStatus.error;
 
-    if (bloodState.status == BloodGroupStatus.error) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            bloodState.errorMessage ?? "Failed to load blood groups",
-            style: const TextStyle(color: Colors.red),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: () {
-              ref
-                  .read(bloodGroupViewModelProvider.notifier)
-                  .getAllBloodGroups();
-            },
-            child: const Text("Retry"),
-          ),
-        ],
-      );
-    }
-
-    // Loaded
     final groups = bloodState.bloodGroups;
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: groups.map((blood) {
-        final idKey = (blood.bloodId!).trim();
-        final label = blood.bloodGroup.trim();
-
-        final isSelected = (_selectedBloodId ?? "") == idKey;
-
-        return InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: () {
-            setState(() => _selectedBloodId = idKey);
-
-            // If you NEED id for API, you should not allow null id.
-            // But for UI selection, this works.
-            if (blood.bloodId != null) {
-              widget.onSelected(
-                bloodId: blood.bloodId!.trim(),
-                bloodGroupLabel: label,
-              );
-            } else {
-              // Optional: still call callback using label as key
-              widget.onSelected(bloodId: idKey, bloodGroupLabel: label);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isSelected ? _brand : Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black45),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (groups.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: "BricolageGrotesque SemiBold",
-                fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.white : Colors.black,
-              ),
+              isLoading
+                  ? "Loading blood groups..."
+                  : isError
+                  ? (bloodState.errorMessage ?? "Failed to load blood groups")
+                  : "No blood groups available",
+              style: TextStyle(color: isError ? Colors.red : Colors.grey),
             ),
           ),
-        );
-      }).toList(),
+
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: groups.map((blood) {
+            final bloodId = (blood.bloodId ?? "").trim();
+            final label = blood.bloodGroup.trim();
+            final isSelected = (_selectedBloodId ?? "") == bloodId;
+
+            return InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: (bloodId.isEmpty || isLoading)
+                  ? null
+                  : () {
+                      setState(() => _selectedBloodId = bloodId);
+                      widget.onSelected(bloodId);
+                    },
+              child: Opacity(
+                opacity: isLoading ? 0.6 : 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? _brand : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.black45),
+                  ),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontFamily: "BricolageGrotesque SemiBold",
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

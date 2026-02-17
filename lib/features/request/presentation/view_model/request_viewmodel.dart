@@ -4,6 +4,11 @@ import 'package:blood_link/features/request/domain/usecases/get_all_requests_use
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final requestViewModelProvider =
+    NotifierProvider.autoDispose<RequestViewmodel, RequestState>(
+      RequestViewmodel.new,
+    );
+
 class RequestViewmodel extends Notifier<RequestState> {
   late final GetAllRequestsUsecase _getAllRequestsUsecase;
   late final CreateRequestUsecase _createRequestUsecase;
@@ -16,15 +21,20 @@ class RequestViewmodel extends Notifier<RequestState> {
   }
 
   Future<void> getAllRequests() async {
-    state = state.copyWith(status: RequestStatus.loading);
+    state = state.copyWith(
+      status: RequestStatus.loading,
+      resetErrorMessage: true,
+    );
 
     final result = await _getAllRequestsUsecase();
 
     result.fold(
-      (failure) => state.copyWith(
-        status: RequestStatus.error,
-        errorMessage: failure.message,
-      ),
+      (failure) {
+        state = state.copyWith(
+          status: RequestStatus.error,
+          errorMessage: failure.message,
+        );
+      },
       (requests) {
         state = state.copyWith(
           status: RequestStatus.loaded,
@@ -39,8 +49,16 @@ class RequestViewmodel extends Notifier<RequestState> {
     required String recipientDetails,
     required ConditionType recipientCondition,
     required String hospitalId,
+
+    RequestForType requestFor = RequestForType.self,
+    String? relationToPatient,
+    String? patientName,
+    String? patientPhone,
   }) async {
-    state = state.copyWith(status: RequestStatus.loading);
+    state = state.copyWith(
+      status: RequestStatus.loading,
+      resetErrorMessage: true,
+    );
 
     final result = await _createRequestUsecase(
       CreateRequestParams(
@@ -48,17 +66,23 @@ class RequestViewmodel extends Notifier<RequestState> {
         recipientDetails: recipientDetails,
         recipientCondition: recipientCondition,
         hospitalId: hospitalId,
+        requestFor: requestFor,
+        relationToPatient: relationToPatient,
+        patientName: patientName,
+        patientPhone: patientPhone,
       ),
     );
 
     result.fold(
-      (failure) => state.copyWith(
-        status: RequestStatus.error,
-        errorMessage: failure.message,
-      ),
-      (success) {
+      (failure) {
+        state = state.copyWith(
+          status: RequestStatus.error,
+          errorMessage: failure.message,
+        );
+      },
+      (success) async {
         state = state.copyWith(status: RequestStatus.created);
-        getAllRequests();
+        await getAllRequests();
       },
     );
   }

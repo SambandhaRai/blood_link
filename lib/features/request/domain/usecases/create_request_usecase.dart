@@ -13,11 +13,20 @@ class CreateRequestParams extends Equatable {
   final ConditionType recipientCondition;
   final String hospitalId;
 
+  final RequestForType requestFor;
+  final String? relationToPatient;
+  final String? patientName;
+  final String? patientPhone;
+
   const CreateRequestParams({
     required this.recipientBloodId,
     required this.recipientDetails,
     required this.recipientCondition,
     required this.hospitalId,
+    this.requestFor = RequestForType.self,
+    this.relationToPatient,
+    this.patientName,
+    this.patientPhone,
   });
 
   @override
@@ -26,6 +35,10 @@ class CreateRequestParams extends Equatable {
     recipientDetails,
     recipientCondition,
     hospitalId,
+    requestFor,
+    relationToPatient,
+    patientName,
+    patientPhone,
   ];
 }
 
@@ -49,6 +62,17 @@ class CreateRequestUsecase
       recipientDetails: param.recipientDetails,
       recipientCondition: param.recipientCondition,
       hospitalId: param.hospitalId,
+
+      requestFor: param.requestFor,
+      relationToPatient: param.requestFor == RequestForType.others
+          ? param.relationToPatient
+          : null,
+      patientName: param.requestFor == RequestForType.others
+          ? param.patientName
+          : null,
+      patientPhone: param.requestFor == RequestForType.others
+          ? param.patientPhone
+          : null,
     );
 
     return _requestRepository.createRequest(requestEntity);
