@@ -10,8 +10,9 @@ HospitalApiModel _$HospitalApiModelFromJson(Map<String, dynamic> json) =>
     HospitalApiModel(
       id: json['_id'] as String,
       name: json['name'] as String,
-      location:
-          GeoPointApiModel.fromJson(json['location'] as Map<String, dynamic>),
+      location: GeoPointApiModel.fromJson(
+        json['location'] as Map<String, dynamic>,
+      ),
       isActive: json['isActive'] as bool,
     );
 

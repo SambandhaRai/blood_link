@@ -4,6 +4,18 @@ import 'package:blood_link/core/services/storage/token_service.dart';
 import 'package:blood_link/features/hospital/data/datasource/hospital_datasource.dart';
 import 'package:blood_link/features/hospital/data/model/hospital_api_model.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final hospitalRemoteDatasourceProvider = Provider<HospitalRemoteDatasource>((
+  ref,
+) {
+  final apiClient = ref.read(apiClientProvider);
+  final tokenService = ref.read(tokenServiceProvider);
+  return HospitalRemoteDatasource(
+    apiClient: apiClient,
+    tokenService: tokenService,
+  );
+});
 
 class HospitalRemoteDatasource implements IRemoteHospitalDatasource {
   final ApiClient _apiClient;
@@ -33,6 +45,9 @@ class HospitalRemoteDatasource implements IRemoteHospitalDatasource {
       ApiEndpoints.hospitalById(hospitalId),
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
-    return response.data['data'];
+    if (response.data['data'] != null) {
+      return HospitalApiModel.fromJson(response.data['data']);
+    }
+    return null;
   }
 }

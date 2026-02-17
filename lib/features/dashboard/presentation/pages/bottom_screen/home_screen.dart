@@ -91,7 +91,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => RequestBloodPage(),
