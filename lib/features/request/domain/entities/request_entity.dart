@@ -8,19 +8,22 @@ class RequestEntity extends Equatable {
   final String? requestId;
 
   final String recipientBloodId;
+  final String hospitalId;
+  final String? postedBy;
+  final String? donorId;
+
+  final String? bloodGroup;
+  final String? hospitalName;
+  final String? postedByName;
+  final String? postedByProfilePicture;
+
   final String recipientDetails;
   final ConditionType recipientCondition;
-  final String hospitalId;
-
-  final String? postedBy;
 
   final RequestForType requestFor;
-
   final String? relationToPatient;
   final String? patientName;
   final String? patientPhone;
-
-  final String? donorId;
 
   final String? requestStatus;
   final DateTime? createdAt;
@@ -29,15 +32,23 @@ class RequestEntity extends Equatable {
   const RequestEntity({
     this.requestId,
     required this.recipientBloodId,
-    required this.recipientDetails,
-    required this.recipientCondition,
     required this.hospitalId,
     this.postedBy,
+    this.donorId,
+
+    this.bloodGroup,
+    this.hospitalName,
+    this.postedByName,
+    this.postedByProfilePicture,
+
+    required this.recipientDetails,
+    required this.recipientCondition,
+
     this.requestFor = RequestForType.self,
     this.relationToPatient,
     this.patientName,
     this.patientPhone,
-    this.donorId,
+
     this.requestStatus,
     this.createdAt,
     this.updatedAt,
@@ -47,15 +58,19 @@ class RequestEntity extends Equatable {
   List<Object?> get props => [
     requestId,
     recipientBloodId,
-    recipientDetails,
-    recipientCondition,
     hospitalId,
     postedBy,
+    donorId,
+    bloodGroup,
+    hospitalName,
+    postedByName,
+    postedByProfilePicture,
+    recipientDetails,
+    recipientCondition,
     requestFor,
     relationToPatient,
     patientName,
     patientPhone,
-    donorId,
     requestStatus,
     createdAt,
     updatedAt,

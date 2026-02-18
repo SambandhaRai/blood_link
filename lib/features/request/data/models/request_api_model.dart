@@ -20,8 +20,25 @@ String _extractRequiredId(dynamic value) {
 String? _extractOptionalId(dynamic value) {
   if (value == null) return null;
   if (value is Map) return value["_id"] as String?;
-  return value as String?;
+  if (value is String) return value;
+  return null;
 }
+
+Object? _readRecipientBlood(Map json, String _) => json['recipientBloodId'];
+Object? _readHospital(Map json, String _) => json['hospitalId'];
+Object? _readPostedBy(Map json, String _) => json['postedBy'];
+
+String? _bloodGroupFromRecipient(dynamic v) =>
+    (v is Map) ? v['bloodGroup'] as String? : null;
+
+String? _hospitalNameFromHospital(dynamic v) =>
+    (v is Map) ? v['name'] as String? : null;
+
+String? _postedByNameFromPostedBy(dynamic v) =>
+    (v is Map) ? v['fullName'] as String? : null;
+
+String? _postedByProfileFromPostedBy(dynamic v) =>
+    (v is Map) ? v['profilePicture'] as String? : null;
 
 RequestForType _requestForFromString(String value) {
   final normalized = value.trim().toLowerCase();
@@ -44,27 +61,43 @@ class RequestApiModel {
   @JsonKey(name: "_id")
   final String? requestId;
 
-  @JsonKey(fromJson: _extractRequiredId)
+  @JsonKey(name: "recipientBloodId", fromJson: _extractRequiredId)
   final String recipientBloodId;
-  final String recipientDetails;
-  final String recipientCondition;
-  @JsonKey(fromJson: _extractRequiredId)
+
+  @JsonKey(name: "hospitalId", fromJson: _extractRequiredId)
   final String hospitalId;
 
-  @JsonKey(fromJson: _extractOptionalId)
+  @JsonKey(name: "postedBy", fromJson: _extractOptionalId)
   final String? postedBy;
+
+  @JsonKey(name: "donorId", fromJson: _extractOptionalId)
+  final String? donorId;
+
+  @JsonKey(readValue: _readRecipientBlood, fromJson: _bloodGroupFromRecipient)
+  final String? bloodGroup;
+
+  @JsonKey(readValue: _readHospital, fromJson: _hospitalNameFromHospital)
+  final String? hospitalName;
+
+  @JsonKey(readValue: _readPostedBy, fromJson: _postedByNameFromPostedBy)
+  final String? postedByName;
+
+  @JsonKey(readValue: _readPostedBy, fromJson: _postedByProfileFromPostedBy)
+  final String? postedByProfilePicture;
+
+  final String recipientDetails;
+  final String recipientCondition;
 
   final String requestFor;
 
   @JsonKey(includeIfNull: false)
   final String? relationToPatient;
+
   @JsonKey(includeIfNull: false)
   final String? patientName;
+
   @JsonKey(includeIfNull: false)
   final String? patientPhone;
-
-  @JsonKey(fromJson: _extractOptionalId)
-  final String? donorId;
 
   final String? requestStatus;
   final DateTime? createdAt;
@@ -77,11 +110,17 @@ class RequestApiModel {
     required this.recipientCondition,
     required this.hospitalId,
     this.postedBy,
+    this.donorId,
+
+    this.bloodGroup,
+    this.hospitalName,
+    this.postedByName,
+    this.postedByProfilePicture,
+
     this.requestFor = "self",
     this.relationToPatient,
     this.patientName,
     this.patientPhone,
-    this.donorId,
     this.requestStatus,
     this.createdAt,
     this.updatedAt,
@@ -95,15 +134,23 @@ class RequestApiModel {
   RequestEntity toEntity() => RequestEntity(
     requestId: requestId,
     recipientBloodId: recipientBloodId,
-    recipientDetails: recipientDetails,
-    recipientCondition: _conditionFromString(recipientCondition),
     hospitalId: hospitalId,
     postedBy: postedBy,
+    donorId: donorId,
+
+    bloodGroup: bloodGroup,
+    hospitalName: hospitalName,
+    postedByName: postedByName,
+    postedByProfilePicture: postedByProfilePicture,
+
+    recipientDetails: recipientDetails,
+    recipientCondition: _conditionFromString(recipientCondition),
+
     requestFor: _requestForFromString(requestFor),
     relationToPatient: relationToPatient,
     patientName: patientName,
     patientPhone: patientPhone,
-    donorId: donorId,
+
     requestStatus: requestStatus,
     createdAt: createdAt,
     updatedAt: updatedAt,
@@ -116,6 +163,12 @@ class RequestApiModel {
     recipientCondition: entity.recipientCondition.name,
     hospitalId: entity.hospitalId,
     postedBy: entity.postedBy,
+    donorId: entity.donorId,
+
+    bloodGroup: entity.bloodGroup,
+    hospitalName: entity.hospitalName,
+    postedByName: entity.postedByName,
+    postedByProfilePicture: entity.postedByProfilePicture,
 
     requestFor: entity.requestFor.name,
     relationToPatient: entity.requestFor == RequestForType.others
@@ -128,7 +181,6 @@ class RequestApiModel {
         ? entity.patientPhone
         : null,
 
-    donorId: entity.donorId,
     requestStatus: entity.requestStatus,
     createdAt: entity.createdAt,
     updatedAt: entity.updatedAt,
