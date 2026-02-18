@@ -1,7 +1,7 @@
 import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/features/request/presentation/pages/request_blood_page.dart';
-import 'package:blood_link/models/request_model.dart';
+import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,32 +14,18 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final List<BloodRequest> requests = const [
-    BloodRequest(
-      name: "Kim Chaewon",
-      donorId: "230233",
-      location: "OM Hospital",
-      distance: "800m",
-      image: "assets/images/pfp.png",
-    ),
-    BloodRequest(
-      name: "Arpana Thapa Magar",
-      donorId: "134559",
-      location: "Himal Hospital",
-      distance: "2.0km",
-      image: "assets/images/pfp2.png",
-    ),
-    BloodRequest(
-      name: "Rabi Gurung",
-      donorId: "126368",
-      location: "HAMS Hospital",
-      distance: "2.3km",
-      image: "assets/images/pfp3.png",
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(requestViewModelProvider.notifier).getAllRequests();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final requestState = ref.watch(requestViewModelProvider);
+    final requests = requestState.requests;
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -206,18 +192,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: requests.length,
                       separatorBuilder: (context, index) =>
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                       itemBuilder: (context, index) {
-                        final request = requests[index];
+                        final req = requests[index];
+
                         return RequestCard(
-                          name: request.name,
-                          donorId: request.donorId,
-                          location: request.location,
-                          distance: request.distance,
-                          image: request.image,
-                          onAccept: () {},
-                          onDecline: () {},
-                          onViewDetails: () {},
+                          bloodGroup: req.bloodGroup!,
+                          requestStatus: req.requestStatus ?? "pending",
+                          hospitalName: req.hospitalName!,
+                          distance: "—", // you can compute later from coords
+                          profileFileName: req.postedByProfilePicture,
+                          fallbackLetter: (req.postedByName ?? "U").trim(),
+                          onAccept: () {
+                            // TODO: accept request
+                          },
+                          onDecline: () {
+                            // TODO: decline request
+                          },
+                          onViewDetails: () {
+                            // TODO: open details page
+                          },
                         );
                       },
                     ),
