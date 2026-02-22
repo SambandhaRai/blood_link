@@ -4,7 +4,7 @@ class MyTextFormField extends StatelessWidget {
   const MyTextFormField({
     super.key,
     required this.controller,
-    required this.labelText,
+    this.labelText,
     required this.hintText,
     this.errorMessage,
     this.obscureText = false,
@@ -13,7 +13,7 @@ class MyTextFormField extends StatelessWidget {
   });
 
   final TextEditingController controller;
-  final String labelText;
+  final String? labelText;
   final String hintText;
   final String? errorMessage;
   final bool obscureText;

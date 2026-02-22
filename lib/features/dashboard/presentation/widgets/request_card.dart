@@ -1,30 +1,42 @@
+import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/core/widgets/my_outlined_button.dart';
 import 'package:flutter/material.dart';
 
 class RequestCard extends StatelessWidget {
   const RequestCard({
     super.key,
-    required this.name,
-    required this.donorId,
-    required this.location,
+    required this.bloodGroup,
+    required this.requestStatus,
+    required this.hospitalName,
     required this.distance,
-    required this.image,
+
+    this.profileFileName,
+    required this.fallbackLetter,
+
     required this.onAccept,
     required this.onDecline,
     required this.onViewDetails,
   });
 
-  final String name;
-  final String donorId;
-  final String location;
+  final String bloodGroup;
+  final String requestStatus;
+  final String hospitalName;
   final String distance;
-  final String image;
+
+  final String? profileFileName;
+  final String fallbackLetter;
+
   final VoidCallback onAccept;
   final VoidCallback onDecline;
   final VoidCallback onViewDetails;
 
   @override
   Widget build(BuildContext context) {
+    final profileImageUrl =
+        (profileFileName != null && profileFileName!.isNotEmpty)
+        ? ApiEndpoints.profilePicture(profileFileName!)
+        : null;
+
     return Card(
       elevation: 5,
       color: Colors.white,
@@ -33,76 +45,80 @@ class RequestCard extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: Row(
           children: [
-            // Profile Image
-            CircleAvatar(radius: 30, backgroundImage: AssetImage(image)),
+            // Network profile picture
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.white,
+              child: ClipOval(
+                child: (profileImageUrl != null)
+                    ? Image.network(
+                        profileImageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Text(
+                            fallbackLetter.isNotEmpty
+                                ? fallbackLetter[0].toUpperCase()
+                                : "U",
+                            style: const TextStyle(fontSize: 22),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          fallbackLetter.isNotEmpty
+                              ? fallbackLetter[0].toUpperCase()
+                              : "U",
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                      ),
+              ),
+            ),
 
             const SizedBox(width: 12),
 
-            // Expanding Text Section
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Name
                   Text(
-                    name,
+                    bloodGroup,
                     style: const TextStyle(
                       fontFamily: 'Bricolage Grotesque',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
-                  // Donor ID
                   Text(
-                    "Donor ID: $donorId",
-                    style: const TextStyle(
-                      fontFamily: 'Bricolage Grotesque',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.grey,
-                    ),
+                    "Status: $requestStatus",
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-
-                  const SizedBox(height: 5),
-
-                  // Location
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       const Icon(
                         Icons.location_on,
                         color: Color(0xFFA72636),
-                        size: 20,
+                        size: 18,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          "$distance, $location",
-                          style: const TextStyle(
-                            fontFamily: 'Bricolage Grotesque',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
+                          "$distance, $hospitalName",
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
-
-                  // View Details
                   GestureDetector(
                     onTap: onViewDetails,
                     child: const Text(
                       "View Details",
                       style: TextStyle(
-                        fontFamily: 'Bricolage Grotesque',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
                         color: Color(0xFFA72636),
                         decoration: TextDecoration.underline,
-                        decorationColor: Color(0xFFA72636),
                       ),
                     ),
                   ),
@@ -110,23 +126,17 @@ class RequestCard extends StatelessWidget {
               ),
             ),
 
-            // Buttons
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA72636),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 20,
-                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   onPressed: onAccept,
-                  child: Text('Accept'),
+                  child: const Text("Accept"),
                 ),
                 const SizedBox(height: 8),
                 MyOutlinedButton(onPressed: onDecline, text: "Decline"),

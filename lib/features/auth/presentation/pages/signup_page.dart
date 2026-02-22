@@ -307,7 +307,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                               ),
                               const SizedBox(height: 20),
 
-                              // ✅ DOB Date Picker (NOT using MyTextFormField)
                               InkWell(
                                 onTap: _pickDob,
                                 child: InputDecorator(
