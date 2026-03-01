@@ -1,9 +1,11 @@
 import 'package:blood_link/features/auth/domain/entities/auth_entity.dart';
+import 'package:blood_link/features/bloodGroup/data/models/blood_api_model.dart';
+import 'package:blood_link/features/user/domain/entities/user_entity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'auth_api_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class AuthApiModel {
   @JsonKey(name: "_id")
   final String? userId;
@@ -11,7 +13,7 @@ class AuthApiModel {
   final String phoneNumber;
   final String dob;
   final String gender;
-  final String? bloodId;
+  final BloodApiModel? bloodId;
   final String? healthCondition;
   final String email;
   final String? password;
@@ -34,39 +36,10 @@ class AuthApiModel {
 
   // toJson
   Map<String, dynamic> toJson() => _$AuthApiModelToJson(this);
-  // {
-  //   return {
-  //     "fullName": fullName,
-  //     "phoneNumber": phoneNumber,
-  //     "dob": _toIsoDob(dob),
-  //     "gender": gender,
-  //     "bloodId": bloodId,
-  //     "healthCondition": healthCondition,
-  //     "email": email,
-  //     "password": password,
-  //     "confirmPassword": confirmPassword,
-  //     "profilePicture": profilePicture,
-  //   };
-  // }
 
   // fromJson
   factory AuthApiModel.fromJson(Map<String, dynamic> json) =>
       _$AuthApiModelFromJson(json);
-  // {
-  //   return AuthApiModel(
-  //     userId: json['_id'] as String?,
-  //     fullName: json['fullName'] as String,
-  //     phoneNumber: json['phoneNumber'] as String,
-  //     dob: json['dob'] as String,
-  //     gender: json['gender'] as String,
-  //     bloodId: json['bloodId'] as String?,
-  //     healthCondition: json['healthCondition'] as String?,
-  //     email: json['email'] as String,
-  //     password: json['password'] as String?,
-  //     confirmPassword: json['confirmPassword'] as String?,
-  //     profilePicture: json['profilePicture'] as String?,
-  //   );
-  // }
 
   // toEntity
   AuthEntity toEntity() {
@@ -76,12 +49,28 @@ class AuthApiModel {
       phoneNumber: phoneNumber,
       dob: dob,
       gender: gender,
-      bloodId: bloodId,
+      bloodId: bloodId?.bloodId,
+      bloodGroup: bloodId?.toEntity(),
       healthCondition: healthCondition,
       email: email,
       password: password,
       confirmPassword: confirmPassword,
       profilePicture: profilePicture,
+    );
+  }
+
+  UserEntity toUserEntity() {
+    return UserEntity(
+      userId: userId,
+      fullName: fullName,
+      phoneNumber: phoneNumber,
+      email: email,
+      profilePicture: profilePicture,
+      bloodId: bloodId?.bloodId,
+      bloodGroup: bloodId?.toEntity(),
+      gender: gender,
+      dob: dob,
+      healthCondition: healthCondition,
     );
   }
 
@@ -93,7 +82,9 @@ class AuthApiModel {
       phoneNumber: entity.phoneNumber,
       dob: entity.dob,
       gender: entity.gender,
-      bloodId: entity.bloodId,
+      bloodId: entity.bloodGroup != null
+          ? BloodApiModel.fromEntity(entity.bloodGroup!)
+          : null,
       healthCondition: entity.healthCondition,
       email: entity.email,
       password: entity.password,

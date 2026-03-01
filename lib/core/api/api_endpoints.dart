@@ -51,6 +51,13 @@ class ApiEndpoints {
 
   // =================== Requests Endpoints ===================
   static const String request = "/request";
+  static const String createRequest = request;
+  static const String getAllPendingRequests = request;
+  static const String getMyRequestHistory = "$request/my/history";
+  static const String getMatchedRequests = "$request/matched";
+  static String getRequestById(String id) => "$request/$id";
+  static String acceptRequest(String id) => "$request/$id/accept";
+  static String finishRequest(String id) => "$request/$id/finish";
 
   // =================== Hospital Endpoints ===================
   static const String hospital = "/hospital";

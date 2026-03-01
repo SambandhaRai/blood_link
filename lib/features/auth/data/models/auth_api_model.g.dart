@@ -12,7 +12,9 @@ AuthApiModel _$AuthApiModelFromJson(Map<String, dynamic> json) => AuthApiModel(
   phoneNumber: json['phoneNumber'] as String,
   dob: json['dob'] as String,
   gender: json['gender'] as String,
-  bloodId: json['bloodId'] as String?,
+  bloodId: json['bloodId'] == null
+      ? null
+      : BloodApiModel.fromJson(json['bloodId'] as Map<String, dynamic>),
   healthCondition: json['healthCondition'] as String?,
   email: json['email'] as String,
   password: json['password'] as String?,
@@ -45,7 +47,7 @@ Map<String, dynamic> _$AuthApiModelToJson(AuthApiModel instance) =>
       'phoneNumber': instance.phoneNumber,
       'dob': _toIsoDob(instance.dob),
       'gender': instance.gender,
-      'bloodId': instance.bloodId,
+      'bloodId': instance.bloodId?.toJson(),
       'healthCondition': instance.healthCondition,
       'email': instance.email,
       'password': instance.password,

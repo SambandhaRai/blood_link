@@ -1,3 +1,4 @@
+import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
 import 'package:equatable/equatable.dart';
 
 class AuthEntity extends Equatable {
@@ -7,6 +8,7 @@ class AuthEntity extends Equatable {
   final String dob;
   final String gender;
   final String? bloodId;
+  final BloodEntity? bloodGroup;
   final String? healthCondition;
   final String email;
   final String? password;
@@ -20,6 +22,7 @@ class AuthEntity extends Equatable {
     required this.dob,
     required this.gender,
     this.bloodId,
+    this.bloodGroup,
     this.healthCondition,
     required this.email,
     this.password,
@@ -35,6 +38,7 @@ class AuthEntity extends Equatable {
     dob,
     gender,
     bloodId,
+    bloodGroup,
     healthCondition,
     email,
     password,
