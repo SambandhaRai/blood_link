@@ -197,12 +197,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         final req = requests[index];
 
                         return RequestCard(
-                          bloodGroup: req.bloodGroup!,
+                          bloodGroup: req.recipientBlood!.bloodGroup,
                           requestStatus: req.requestStatus ?? "pending",
-                          hospitalName: req.hospitalName!,
+                          hospitalName: req.hospital!.name,
                           distance: "—", // you can compute later from coords
-                          profileFileName: req.postedByProfilePicture,
-                          fallbackLetter: (req.postedByName ?? "U").trim(),
+                          profileFileName: req.receiver?.profilePicture,
+                          fallbackLetter: (req.receiver?.fullName ?? "U")
+                              .trim(),
                           onAccept: () {
                             // TODO: accept request
                           },
