@@ -4,7 +4,7 @@ import 'package:blood_link/core/widgets/my_multi_line_text_form_field.dart';
 import 'package:blood_link/core/widgets/my_text_form_field.dart';
 import 'package:blood_link/features/hospital/presentation/state/hospital_state.dart';
 import 'package:blood_link/features/hospital/presentation/view_model/hospital_viewmodel.dart';
-import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/request/domain/entities/create_request_entity.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:blood_link/features/request/presentation/widgets/blood_type_selector_widget.dart';

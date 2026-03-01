@@ -1,102 +1,61 @@
+import 'package:blood_link/features/bloodGroup/data/models/blood_api_model.dart';
+import 'package:blood_link/features/hospital/data/model/hospital_api_model.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/user/data/models/user_api_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'request_api_model.g.dart';
 
-String _extractRequiredId(dynamic value) {
-  if (value == null) {
-    throw const FormatException("Expected an id but got null");
-  }
-  if (value is Map) {
-    final id = value["_id"];
-    if (id is String && id.isNotEmpty) return id;
-    throw const FormatException("Expected an object with _id");
-  }
-  if (value is String && value.isNotEmpty) return value;
-
-  throw const FormatException("Expected id as String or {_id: String}");
-}
-
-String? _extractOptionalId(dynamic value) {
+BloodApiModel? _bloodFromJson(dynamic value) {
   if (value == null) return null;
-  if (value is Map) return value["_id"] as String?;
-  if (value is String) return value;
+  if (value is String) return BloodApiModel(bloodId: value, bloodGroup: '');
+  if (value is Map<String, dynamic>) return BloodApiModel.fromJson(value);
+  if (value is Map) {
+    return BloodApiModel.fromJson(value.cast<String, dynamic>());
+  }
   return null;
 }
 
-Object? _readRecipientBlood(Map json, String _) => json['recipientBloodId'];
-Object? _readHospital(Map json, String _) => json['hospitalId'];
-Object? _readPostedBy(Map json, String _) => json['postedBy'];
-
-String? _bloodGroupFromRecipient(dynamic v) =>
-    (v is Map) ? v['bloodGroup'] as String? : null;
-
-String? _hospitalNameFromHospital(dynamic v) =>
-    (v is Map) ? v['name'] as String? : null;
-
-String? _postedByNameFromPostedBy(dynamic v) =>
-    (v is Map) ? v['fullName'] as String? : null;
-
-String? _postedByProfileFromPostedBy(dynamic v) =>
-    (v is Map) ? v['profilePicture'] as String? : null;
-
-RequestForType _requestForFromString(String value) {
-  final normalized = value.trim().toLowerCase();
-  return RequestForType.values.firstWhere(
-    (e) => e.name == normalized,
-    orElse: () => RequestForType.self,
-  );
+HospitalApiModel? _hospitalFromJson(dynamic value) {
+  if (value == null) return null;
+  return HospitalApiModel.fromFlexible(value);
 }
 
-ConditionType _conditionFromString(String value) {
-  final normalized = value.trim().toLowerCase();
-  return ConditionType.values.firstWhere(
-    (e) => e.name == normalized,
-    orElse: () => ConditionType.urgent,
-  );
+UserApiModel? _userFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is String) {
+    return UserApiModel(
+      userId: value,
+      fullName: '',
+      phoneNumber: '',
+      email: '',
+    );
+  }
+  if (value is Map<String, dynamic>) return UserApiModel.fromJson(value);
+  if (value is Map) return UserApiModel.fromJson(value.cast<String, dynamic>());
+  return null;
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true, includeIfNull: true)
 class RequestApiModel {
   @JsonKey(name: "_id")
   final String? requestId;
 
-  @JsonKey(name: "recipientBloodId", fromJson: _extractRequiredId)
-  final String recipientBloodId;
-
-  @JsonKey(name: "hospitalId", fromJson: _extractRequiredId)
-  final String hospitalId;
-
-  @JsonKey(name: "postedBy", fromJson: _extractOptionalId)
-  final String? postedBy;
-
-  @JsonKey(name: "donorId", fromJson: _extractOptionalId)
-  final String? donorId;
-
-  @JsonKey(readValue: _readRecipientBlood, fromJson: _bloodGroupFromRecipient)
-  final String? bloodGroup;
-
-  @JsonKey(readValue: _readHospital, fromJson: _hospitalNameFromHospital)
-  final String? hospitalName;
-
-  @JsonKey(readValue: _readPostedBy, fromJson: _postedByNameFromPostedBy)
-  final String? postedByName;
-
-  @JsonKey(readValue: _readPostedBy, fromJson: _postedByProfileFromPostedBy)
-  final String? postedByProfilePicture;
+  @JsonKey(fromJson: _bloodFromJson)
+  final BloodApiModel? recipientBloodId;
+  @JsonKey(fromJson: _hospitalFromJson)
+  final HospitalApiModel? hospitalId;
+  @JsonKey(fromJson: _userFromJson)
+  final UserApiModel? postedBy;
+  @JsonKey(fromJson: _userFromJson)
+  final UserApiModel? donorId;
 
   final String recipientDetails;
   final String recipientCondition;
 
   final String requestFor;
-
-  @JsonKey(includeIfNull: false)
   final String? relationToPatient;
-
-  @JsonKey(includeIfNull: false)
   final String? patientName;
-
-  @JsonKey(includeIfNull: false)
   final String? patientPhone;
 
   final String? requestStatus;
@@ -106,18 +65,12 @@ class RequestApiModel {
   const RequestApiModel({
     this.requestId,
     required this.recipientBloodId,
-    required this.recipientDetails,
-    required this.recipientCondition,
     required this.hospitalId,
     this.postedBy,
     this.donorId,
-
-    this.bloodGroup,
-    this.hospitalName,
-    this.postedByName,
-    this.postedByProfilePicture,
-
-    this.requestFor = "self",
+    required this.recipientDetails,
+    required this.recipientCondition,
+    required this.requestFor,
     this.relationToPatient,
     this.patientName,
     this.patientPhone,
@@ -131,62 +84,84 @@ class RequestApiModel {
 
   Map<String, dynamic> toJson() => _$RequestApiModelToJson(this);
 
-  RequestEntity toEntity() => RequestEntity(
-    requestId: requestId,
-    recipientBloodId: recipientBloodId,
-    hospitalId: hospitalId,
-    postedBy: postedBy,
-    donorId: donorId,
+  RequestEntity toEntity() {
+    final cond = ConditionType.values.firstWhere(
+      (e) => e.name == recipientCondition.trim().toLowerCase(),
+      orElse: () => ConditionType.urgent,
+    );
 
-    bloodGroup: bloodGroup,
-    hospitalName: hospitalName,
-    postedByName: postedByName,
-    postedByProfilePicture: postedByProfilePicture,
+    final rf = RequestForType.values.firstWhere(
+      (e) => e.name == requestFor.trim().toLowerCase(),
+      orElse: () => RequestForType.self,
+    );
 
-    recipientDetails: recipientDetails,
-    recipientCondition: _conditionFromString(recipientCondition),
+    return RequestEntity(
+      requestId: requestId,
 
-    requestFor: _requestForFromString(requestFor),
-    relationToPatient: relationToPatient,
-    patientName: patientName,
-    patientPhone: patientPhone,
+      recipientBloodId: recipientBloodId?.bloodId ?? "",
+      hospitalId: hospitalId?.id ?? "",
 
-    requestStatus: requestStatus,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+      recipientBlood: recipientBloodId?.toEntity(),
+      hospital: hospitalId?.toEntity(),
 
-  factory RequestApiModel.fromEntity(RequestEntity entity) => RequestApiModel(
-    requestId: entity.requestId,
-    recipientBloodId: entity.recipientBloodId,
-    recipientDetails: entity.recipientDetails,
-    recipientCondition: entity.recipientCondition.name,
-    hospitalId: entity.hospitalId,
-    postedBy: entity.postedBy,
-    donorId: entity.donorId,
+      postedBy: postedBy?.userId,
+      receiver: postedBy?.toEntity(),
+      donorId: donorId?.userId,
+      donor: donorId?.toEntity(),
 
-    bloodGroup: entity.bloodGroup,
-    hospitalName: entity.hospitalName,
-    postedByName: entity.postedByName,
-    postedByProfilePicture: entity.postedByProfilePicture,
+      recipientDetails: recipientDetails,
+      recipientCondition: cond,
 
-    requestFor: entity.requestFor.name,
-    relationToPatient: entity.requestFor == RequestForType.others
-        ? entity.relationToPatient
-        : null,
-    patientName: entity.requestFor == RequestForType.others
-        ? entity.patientName
-        : null,
-    patientPhone: entity.requestFor == RequestForType.others
-        ? entity.patientPhone
-        : null,
+      requestFor: rf,
+      relationToPatient: relationToPatient,
+      patientName: patientName,
+      patientPhone: patientPhone,
 
-    requestStatus: entity.requestStatus,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
-  );
+      requestStatus: requestStatus,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
+  factory RequestApiModel.fromEntity(RequestEntity entity) {
+    return RequestApiModel(
+      requestId: entity.requestId,
+
+      recipientBloodId: entity.recipientBlood != null
+          ? BloodApiModel.fromEntity(entity.recipientBlood!)
+          : null,
+      hospitalId: entity.hospital != null
+          ? HospitalApiModel.fromEntity(entity.hospital!)
+          : null,
+
+      postedBy: entity.receiver == null
+          ? null
+          : UserApiModel.fromEntity(entity.receiver!),
+      donorId: entity.donor == null
+          ? null
+          : UserApiModel.fromEntity(entity.donor!),
+
+      recipientDetails: entity.recipientDetails,
+      recipientCondition: entity.recipientCondition.name,
+      requestFor: entity.requestFor.name,
+
+      relationToPatient: entity.requestFor == RequestForType.others
+          ? entity.relationToPatient
+          : null,
+      patientName: entity.requestFor == RequestForType.others
+          ? entity.patientName
+          : null,
+      patientPhone: entity.requestFor == RequestForType.others
+          ? entity.patientPhone
+          : null,
+
+      requestStatus: entity.requestStatus,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    );
+  }
 
   static List<RequestEntity> toEntityList(List<RequestApiModel> models) {
-    return models.map((model) => model.toEntity()).toList();
+    return models.map((m) => m.toEntity()).toList();
   }
 }

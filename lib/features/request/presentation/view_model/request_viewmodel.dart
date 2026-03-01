@@ -1,6 +1,6 @@
-import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/request/domain/entities/create_request_entity.dart';
 import 'package:blood_link/features/request/domain/usecases/create_request_usecase.dart';
-import 'package:blood_link/features/request/domain/usecases/get_all_requests_usecase.dart';
+import 'package:blood_link/features/request/domain/usecases/get_all_pending_requests_usecase.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,23 +10,25 @@ final requestViewModelProvider =
     );
 
 class RequestViewmodel extends Notifier<RequestState> {
-  late final GetAllRequestsUsecase _getAllRequestsUsecase;
+  late final GetAllPendingRequestsUsecase _getAllRequestsUsecase;
   late final CreateRequestUsecase _createRequestUsecase;
 
   @override
   RequestState build() {
-    _getAllRequestsUsecase = ref.read(getAllRequestsUsecaseProvider);
+    _getAllRequestsUsecase = ref.read(getAllPendingRequestsUsecaseProvider);
     _createRequestUsecase = ref.read(createRequestUsecaseProvider);
     return const RequestState();
   }
 
-  Future<void> getAllRequests() async {
+  Future<void> getAllRequests({String? search}) async {
     state = state.copyWith(
       status: RequestStatus.loading,
       resetErrorMessage: true,
     );
 
-    final result = await _getAllRequestsUsecase();
+    final result = await _getAllRequestsUsecase(
+      PendingRequestsParams(search: search),
+    );
 
     result.fold(
       (failure) {
@@ -49,7 +51,6 @@ class RequestViewmodel extends Notifier<RequestState> {
     required String recipientDetails,
     required ConditionType recipientCondition,
     required String hospitalId,
-
     RequestForType requestFor = RequestForType.self,
     String? relationToPatient,
     String? patientName,
@@ -67,9 +68,11 @@ class RequestViewmodel extends Notifier<RequestState> {
         recipientCondition: recipientCondition,
         hospitalId: hospitalId,
         requestFor: requestFor,
-        relationToPatient: relationToPatient,
-        patientName: patientName,
-        patientPhone: patientPhone,
+        relationToPatient: requestFor == RequestForType.others
+            ? relationToPatient
+            : null,
+        patientName: requestFor == RequestForType.others ? patientName : null,
+        patientPhone: requestFor == RequestForType.others ? patientPhone : null,
       ),
     );
 
@@ -80,8 +83,11 @@ class RequestViewmodel extends Notifier<RequestState> {
           errorMessage: failure.message,
         );
       },
-      (success) async {
-        state = state.copyWith(status: RequestStatus.created);
+      (createdRequest) async {
+        state = state.copyWith(
+          status: RequestStatus.created,
+          requests: [createdRequest, ...state.requests],
+        );
         await getAllRequests();
       },
     );
