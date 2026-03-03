@@ -18,7 +18,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(requestViewModelProvider.notifier).getAllRequests();
+      ref.read(requestViewModelProvider.notifier).getAllPendingRequests();
     });
   }
 
@@ -190,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: requests.length,
+                      itemCount: requests.take(4).length,
                       separatorBuilder: (context, index) =>
                           const SizedBox(height: 10),
                       itemBuilder: (context, index) {

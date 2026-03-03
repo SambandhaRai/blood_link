@@ -1,8 +1,24 @@
 import 'package:blood_link/features/bloodGroup/data/models/blood_api_model.dart';
+import 'package:blood_link/features/geo_point/data/model/geo_point_api_model.dart';
 import 'package:blood_link/features/user/domain/entities/user_entity.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'user_api_model.g.dart';
+
+BloodApiModel? _bloodFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is String) return BloodApiModel(bloodId: value, bloodGroup: '');
+  if (value is Map<String, dynamic>) return BloodApiModel.fromJson(value);
+  if (value is Map) return BloodApiModel.fromJson(value.cast<String, dynamic>());
+  return null;
+}
+
+GeoPointApiModel? _locationFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is Map<String, dynamic>) return GeoPointApiModel.fromJson(value);
+  if (value is Map) return GeoPointApiModel.fromJson(value.cast<String, dynamic>());
+  return null;
+}
 
 @JsonSerializable(explicitToJson: true)
 class UserApiModel {
@@ -15,7 +31,10 @@ class UserApiModel {
 
   final String? profilePicture;
 
+  @JsonKey(fromJson: _bloodFromJson)
   final BloodApiModel? bloodId;
+  @JsonKey(fromJson: _locationFromJson)
+  final GeoPointApiModel? location;
 
   final String? gender;
 
@@ -35,6 +54,7 @@ class UserApiModel {
     required this.email,
     this.profilePicture,
     this.bloodId,
+    this.location,
     this.gender,
     this.dob,
     this.healthCondition,
@@ -69,6 +89,7 @@ class UserApiModel {
       profilePicture: profilePicture,
       bloodId: bloodId?.bloodId,
       bloodGroup: bloodId?.toEntity(),
+      location: location?.toEntity(),
       gender: gender,
       dob: dob,
       healthCondition: healthCondition,
@@ -87,6 +108,9 @@ class UserApiModel {
       profilePicture: entity.profilePicture,
       bloodId: entity.bloodGroup != null
           ? BloodApiModel.fromEntity(entity.bloodGroup!)
+          : null,
+      location: entity.location != null
+          ? GeoPointApiModel.fromEntity(entity.location!)
           : null,
       gender: entity.gender,
       dob: entity.dob,

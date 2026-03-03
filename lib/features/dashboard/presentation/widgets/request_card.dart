@@ -1,5 +1,4 @@
 import 'package:blood_link/core/api/api_endpoints.dart';
-import 'package:blood_link/core/widgets/my_outlined_button.dart';
 import 'package:flutter/material.dart';
 
 class RequestCard extends StatelessWidget {
@@ -130,16 +129,19 @@ class RequestCard extends StatelessWidget {
               children: [
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA72636),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   ),
                   onPressed: onAccept,
-                  child: const Text("Accept"),
+                  child: const Text("Accept", style: TextStyle(fontSize: 18)),
                 ),
-                const SizedBox(height: 8),
-                MyOutlinedButton(onPressed: onDecline, text: "Decline"),
+                const SizedBox(height: 2),
+                OutlinedButton(
+                  onPressed: onDecline,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  ),
+                  child: Text("Decline", style: TextStyle(fontSize: 18)),
+                ),
               ],
             ),
           ],

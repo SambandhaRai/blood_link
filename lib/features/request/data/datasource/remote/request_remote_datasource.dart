@@ -212,16 +212,4 @@ class RequestRemoteDatasource implements IRequestRemoteDatasource {
       totalPages: (pagination["totalPages"] ?? 0) as int,
     );
   }
-
-  Future<List<RequestApiModel>> getAllRequestsLegacy() async {
-    final token = _tokenService.getToken();
-
-    final response = await _apiClient.get(
-      ApiEndpoints.request,
-      options: _authOptions(token),
-    );
-
-    final data = (response.data["data"] as List? ?? []);
-    return data.map((json) => RequestApiModel.fromJson(json)).toList();
-  }
 }

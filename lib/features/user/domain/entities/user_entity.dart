@@ -1,4 +1,5 @@
 import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
+import 'package:blood_link/features/geo_point/domain/entities/geo_point_entity.dart';
 import 'package:equatable/equatable.dart';
 
 class UserEntity extends Equatable {
@@ -19,6 +20,7 @@ class UserEntity extends Equatable {
   final String? healthCondition;
 
   final String? activeAcceptedRequestId;
+  final GeoPoint? location;
 
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -35,6 +37,7 @@ class UserEntity extends Equatable {
     this.dob,
     this.healthCondition,
     this.activeAcceptedRequestId,
+    this.location,
     this.createdAt,
     this.updatedAt,
   });
@@ -52,6 +55,7 @@ class UserEntity extends Equatable {
     dob,
     healthCondition,
     activeAcceptedRequestId,
+    location,
     createdAt,
     updatedAt,
   ];

@@ -12,9 +12,8 @@ UserApiModel _$UserApiModelFromJson(Map<String, dynamic> json) => UserApiModel(
   phoneNumber: json['phoneNumber'] as String,
   email: json['email'] as String,
   profilePicture: json['profilePicture'] as String?,
-  bloodId: json['bloodId'] == null
-      ? null
-      : BloodApiModel.fromJson(json['bloodId'] as Map<String, dynamic>),
+  bloodId: _bloodFromJson(json['bloodId']),
+  location: _locationFromJson(json['location']),
   gender: json['gender'] as String?,
   dob: json['dob'] as String?,
   healthCondition: json['healthCondition'] as String?,
@@ -48,6 +47,7 @@ Map<String, dynamic> _$UserApiModelToJson(UserApiModel instance) =>
       'email': instance.email,
       'profilePicture': instance.profilePicture,
       'bloodId': instance.bloodId?.toJson(),
+      'location': instance.location?.toJson(),
       'gender': instance.gender,
       'dob': _toIsoDob(instance.dob),
       'healthCondition': instance.healthCondition,
