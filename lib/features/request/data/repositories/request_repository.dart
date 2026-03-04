@@ -26,6 +26,24 @@ class RequestRepository implements IRequestRepository {
   }) : _requestRemoteDatasource = requestRemoteDatasource,
        _networkInfo = networkInfo;
 
+  String _dioErrorMessage(
+    DioException e, {
+    String fallback = "Request failed",
+  }) {
+    final data = e.response?.data;
+    if (data is Map<String, dynamic>) {
+      final message = data["message"];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+      final errors = data["errors"];
+      if (errors is String && errors.trim().isNotEmpty) {
+        return errors.trim();
+      }
+    }
+    return e.message?.trim().isNotEmpty == true ? e.message!.trim() : fallback;
+  }
+
   @override
   Future<Either<Failure, RequestEntity>> createRequest(
     CreateRequestEntity request,
@@ -152,7 +170,11 @@ class RequestRepository implements IRequestRepository {
       final model = await _requestRemoteDatasource.acceptRequest(requestId);
       return Right(model.toEntity());
     } on DioException catch (e) {
-      return Left(ApiFailure(message: e.toString()));
+      return Left(
+        ApiFailure(
+          message: _dioErrorMessage(e, fallback: "Failed to accept request"),
+        ),
+      );
     } catch (e) {
       return Left(ApiFailure(message: e.toString()));
     }
