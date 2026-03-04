@@ -162,6 +162,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final coverHeight = compact ? 300.0 : 350.0;
+    final avatarSize = compact ? 104.0 : 130.0;
+
     final userSessionService = ref.watch(userSessionServiceProvider);
 
     final userName = userSessionService.getCurrentUserFullName() ?? 'User';
@@ -181,7 +186,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Container(
                 width: double.infinity,
-                height: 350,
+                height: coverHeight,
                 decoration: const BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.only(
@@ -191,16 +196,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
-                    const Text(
+                    SizedBox(height: compact ? 14 : 20),
+                    Text(
                       "My Profile",
                       style: TextStyle(
                         fontFamily: "BricolageGrotesque SemiBold",
-                        fontSize: 20,
+                        fontSize: compact ? 18 : 20,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 25),
+                    SizedBox(height: compact ? 18 : 25),
 
                     // Profile Picture (API only)
                     GestureDetector(
@@ -209,8 +214,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         alignment: Alignment.bottomRight,
                         children: [
                           Container(
-                            width: 130,
-                            height: 130,
+                            width: avatarSize,
+                            height: avatarSize,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 4),
@@ -227,7 +232,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ? Image.network(
                                       profileImageUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
+                                      errorBuilder: (_, error, stackTrace) =>
                                           _initialAvatar(userName),
                                     )
                                   : _initialAvatar(userName),
@@ -237,14 +242,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           // little camera icon
                           Container(
                             margin: const EdgeInsets.only(right: 6, bottom: 6),
-                            padding: const EdgeInsets.all(7),
+                            padding: EdgeInsets.all(compact ? 6 : 7),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.camera_alt,
-                              size: 18,
+                              size: compact ? 16 : 18,
                               color: AppColors.primary,
                             ),
                           ),
@@ -252,43 +257,73 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    SizedBox(height: compact ? 10 : 15),
                     Text(
                       userName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "BricolageGrotesque SemiBold",
-                        fontSize: 25,
+                        fontSize: compact ? 21 : 25,
                         color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       userEmail,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "BricolageGrotesque Light",
-                        fontSize: 14,
+                        fontSize: compact ? 13 : 14,
                         color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 400),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _showLogoutDialog(context),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.logout, size: 20),
-                        SizedBox(width: 6),
-                        Text("Logout", style: TextStyle(fontSize: 15)),
-                      ],
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  compact ? 20 : 28,
+                  16,
+                  compact ? 24 : 32,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Card(
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Manage your account settings and sign out securely.",
+                              style: TextStyle(
+                                fontSize: compact ? 13 : 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: () => _showLogoutDialog(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.logout, size: compact ? 18 : 20),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "Logout",
+                                  style: TextStyle(fontSize: compact ? 14 : 15),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             ],
           ),

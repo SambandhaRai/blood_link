@@ -26,6 +26,13 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final avatarSize = compact ? 44.0 : 52.0;
+    final avatarInnerSize = compact ? 40.0 : 48.0;
+    final iconSize = compact ? 28.0 : 36.0;
+    final greetingFont = compact ? 20.0 : 25.0;
+
     final userSessionService = ref.watch(userSessionServiceProvider);
 
     final userName = userSessionService
@@ -51,91 +58,101 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                width: avatarSize,
+                                height: avatarSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
                                 ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 24,
-                                backgroundColor: Colors.white,
-                                child: ClipOval(
-                                  child: (profileImageUrl != null)
-                                      ? Image.network(
-                                          profileImageUrl,
-                                          width: 48,
-                                          height: 48,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Center(
+                                child: CircleAvatar(
+                                  radius: avatarInnerSize / 2,
+                                  backgroundColor: Colors.white,
+                                  child: ClipOval(
+                                    child: (profileImageUrl != null)
+                                        ? Image.network(
+                                            profileImageUrl,
+                                            width: avatarInnerSize,
+                                            height: avatarInnerSize,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, error, stackTrace) =>
+                                                    Center(
+                                                      child: Text(
+                                                        userName.isNotEmpty
+                                                            ? userName[0]
+                                                                  .toUpperCase()
+                                                            : "U",
+                                                        style: TextStyle(
+                                                          fontSize: compact
+                                                              ? 18
+                                                              : 24,
+                                                        ),
+                                                      ),
+                                                    ),
+                                          )
+                                        : Center(
                                             child: Text(
                                               userName.isNotEmpty
                                                   ? userName[0].toUpperCase()
                                                   : "U",
-                                              style: const TextStyle(
-                                                fontSize: 24,
+                                              style: TextStyle(
+                                                fontSize: compact ? 18 : 24,
                                               ),
                                             ),
                                           ),
-                                        )
-                                      : Center(
-                                          child: Text(
-                                            userName.isNotEmpty
-                                                ? userName[0].toUpperCase()
-                                                : "U",
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                            ),
-                                          ),
-                                        ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Icon(
-                                Icons.check_circle,
-                                color: Colors.lightGreenAccent,
-                                size: 16,
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.lightGreenAccent,
+                                  size: 16,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Hi, $userName",
-                          style: TextStyle(
-                            fontFamily: 'BricolageGrotesque SemiBold',
-                            fontSize: 25,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            ],
                           ),
-                        ),
-                      ],
+                          SizedBox(width: compact ? 6 : 10),
+                          Expanded(
+                            child: Text(
+                              "Hi, $userName",
+                              style: TextStyle(
+                                fontFamily: 'BricolageGrotesque SemiBold',
+                                fontSize: greetingFont,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.access_time,
-                            size: 36,
+                            size: iconSize,
                             color: Colors.white,
                           ),
                           onPressed: () {},
                         ),
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.notifications_none,
-                            size: 36,
+                            size: iconSize,
                             color: Colors.white,
                           ),
                           onPressed: () {},

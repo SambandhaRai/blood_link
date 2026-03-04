@@ -109,6 +109,10 @@ class _RequestBloodPageState extends ConsumerState<RequestBloodPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final maxFormWidth = screenWidth > 900 ? 760.0 : 680.0;
+
     final hospitalState = ref.watch(hospitalViewModelProvider);
 
     ref.watch(requestViewModelProvider);
@@ -153,7 +157,7 @@ class _RequestBloodPageState extends ConsumerState<RequestBloodPage>
             clipBehavior: Clip.none,
             children: [
               Container(
-                height: 80,
+                height: compact ? 68 : 80,
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Color(0xFFA72636),
@@ -165,259 +169,280 @@ class _RequestBloodPageState extends ConsumerState<RequestBloodPage>
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(10, 10, 10, 15),
-                child: Card(
-                  color: Colors.white,
-                  elevation: 10,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: TabBar(
-                              controller: _tabController,
-                              onTap: (index) {
-                                setState(() {
-                                  if (index == 0) {
-                                    _relationController.clear();
-                                    _patientNameController.clear();
-                                    _patientPhoneController.clear();
-                                  }
-                                });
-                              },
-                              indicator: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppColors.primary,
-                              ),
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              dividerColor: Colors.transparent,
-                              labelColor: Colors.white,
-                              unselectedLabelColor: Colors.grey.shade700,
-                              labelStyle: TextStyle(
-                                fontFamily: "BricolageGrotesque SemiBold",
-                                fontSize: 14,
-                              ),
-                              tabs: [
-                                Tab(child: Text("For Myself")),
-                                Tab(child: Text("For Others")),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            "Recipient Blood Type:",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: "BricolageGrotesque SemiBold",
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          BloodTypeSelector(
-                            initialSelectedBloodId: _selectedBloodGroupId,
-                            onSelected: (bloodId) {
-                              setState(() {
-                                _selectedBloodGroupId = bloodId;
-                              });
-                            },
-                          ),
-
-                          const SizedBox(height: 25),
-                          const Text(
-                            "Recipient's Details:",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: "BricolageGrotesque SemiBold",
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          MyMultiLineTextFormField(
-                            controller: _recipientDetailsController,
-                            hintText: "Type Here...",
-                          ),
-
-                          const SizedBox(height: 25),
-                          const Text(
-                            "Recipient's Condition:",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: "BricolageGrotesque SemiBold",
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          DropdownButtonFormField<ConditionType>(
-                            initialValue: _selectedCondition,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(color: Colors.grey),
-                              hintText: "Choose recipient condition",
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.grey,
-                                  width: 1.5,
+                padding: EdgeInsets.fromLTRB(10, compact ? 8 : 10, 10, 15),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxFormWidth),
+                    child: Card(
+                      color: Colors.white,
+                      elevation: 10,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(compact ? 14 : 20),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFA72636),
-                                  width: 1.5,
+                                child: TabBar(
+                                  controller: _tabController,
+                                  onTap: (index) {
+                                    setState(() {
+                                      if (index == 0) {
+                                        _relationController.clear();
+                                        _patientNameController.clear();
+                                        _patientPhoneController.clear();
+                                      }
+                                    });
+                                  },
+                                  indicator: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: AppColors.primary,
+                                  ),
+                                  indicatorSize: TabBarIndicatorSize.tab,
+                                  dividerColor: Colors.transparent,
+                                  labelColor: Colors.white,
+                                  unselectedLabelColor: Colors.grey.shade700,
+                                  labelStyle: TextStyle(
+                                    fontFamily: "BricolageGrotesque SemiBold",
+                                    fontSize: compact ? 12 : 14,
+                                  ),
+                                  tabs: [
+                                    const Tab(
+                                      child: FittedBox(
+                                        child: Text("For Myself"),
+                                      ),
+                                    ),
+                                    const Tab(
+                                      child: FittedBox(
+                                        child: Text("For Others"),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                borderRadius: BorderRadius.circular(12),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 18,
+                              SizedBox(height: compact ? 16 : 20),
+                              Text(
+                                "Recipient Blood Type:",
+                                style: TextStyle(
+                                  fontSize: compact ? 18 : 20,
+                                  fontFamily: "BricolageGrotesque SemiBold",
+                                ),
                               ),
-                            ),
-                            items: ConditionType.values.map((c) {
-                              return DropdownMenuItem<ConditionType>(
-                                value: c,
-                                child: Text(_conditionLabel(c)),
-                              );
-                            }).toList(),
-                            onChanged: (ConditionType? value) {
-                              setState(() {
-                                _selectedCondition = value;
-                              });
-                            },
-                          ),
+                              const SizedBox(height: 12),
 
-                          const SizedBox(height: 25),
-                          const Text(
-                            "Hospital Name:",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: "BricolageGrotesque SemiBold",
-                            ),
-                          ),
-                          const SizedBox(height: 5),
+                              BloodTypeSelector(
+                                initialSelectedBloodId: _selectedBloodGroupId,
+                                onSelected: (bloodId) {
+                                  setState(() {
+                                    _selectedBloodGroupId = bloodId;
+                                  });
+                                },
+                              ),
 
-                          DropdownButtonFormField(
-                            initialValue: _selectedHospital,
-                            decoration: InputDecoration(
-                              labelStyle: const TextStyle(color: Colors.grey),
-                              hintText:
-                                  hospitalState.status == HospitalStatus.loading
-                                  ? "Loading Hospitals..."
-                                  : "Choose Hospital",
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.grey,
-                                  width: 1.5,
+                              const SizedBox(height: 25),
+                              Text(
+                                "Recipient's Details:",
+                                style: TextStyle(
+                                  fontSize: compact ? 18 : 20,
+                                  fontFamily: "BricolageGrotesque SemiBold",
                                 ),
-                                borderRadius: BorderRadius.circular(12),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFA72636),
-                                  width: 1.5,
+                              const SizedBox(height: 5),
+                              MyMultiLineTextFormField(
+                                controller: _recipientDetailsController,
+                                hintText: "Type Here...",
+                              ),
+
+                              const SizedBox(height: 25),
+                              Text(
+                                "Recipient's Condition:",
+                                style: TextStyle(
+                                  fontSize: compact ? 18 : 20,
+                                  fontFamily: "BricolageGrotesque SemiBold",
                                 ),
-                                borderRadius: BorderRadius.circular(12),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 18,
-                              ),
-                            ),
-                            items: hospitalState.hospitals
-                                .where((hospital) => hospital.isActive)
-                                .map((hospital) {
-                                  return DropdownMenuItem<String>(
-                                    value: hospital.id,
-                                    child: Text(hospital.name),
+                              const SizedBox(height: 5),
+                              DropdownButtonFormField<ConditionType>(
+                                initialValue: _selectedCondition,
+                                decoration: InputDecoration(
+                                  labelStyle: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                  hintText: "Choose recipient condition",
+                                  hintStyle: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.grey,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFA72636),
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 18,
+                                  ),
+                                ),
+                                items: ConditionType.values.map((c) {
+                                  return DropdownMenuItem<ConditionType>(
+                                    value: c,
+                                    child: Text(_conditionLabel(c)),
                                   );
-                                })
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedHospital = value;
-                              });
-                            },
-                          ),
-
-                          if (_isOthers) ...[
-                            const SizedBox(height: 25),
-                            Text(
-                              "Patient's Information:",
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontFamily: "BricolageGrotesque SemiBold",
+                                }).toList(),
+                                onChanged: (ConditionType? value) {
+                                  setState(() {
+                                    _selectedCondition = value;
+                                  });
+                                },
                               ),
-                            ),
-                            const SizedBox(height: 5),
-                            MyTextFormField(
-                              controller: _relationController,
-                              hintText: "Relation to patient (e.g. Brother)",
-                              validator: (v) {
-                                if (!_isOthers) return null;
-                                if (v == null || v.trim().length < 2) {
-                                  return "Relation is required";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            MyTextFormField(
-                              controller: _patientNameController,
-                              hintText: "Patient name",
-                              validator: (v) {
-                                if (!_isOthers) return null;
-                                if (v == null || v.trim().length < 2) {
-                                  return "Patient name is required";
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _patientPhoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                hintText: "Patient phone number",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+
+                              const SizedBox(height: 25),
+                              Text(
+                                "Hospital Name:",
+                                style: TextStyle(
+                                  fontSize: compact ? 18 : 20,
+                                  fontFamily: "BricolageGrotesque SemiBold",
                                 ),
                               ),
-                              validator: (v) {
-                                if (!_isOthers) return null;
-                                if (v == null || v.trim().length < 6) {
-                                  return "Patient phone is required";
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+                              const SizedBox(height: 5),
 
-                          const SizedBox(height: 25),
-                          Center(
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _handlePostRequest,
-                                child: Text("Post Request"),
+                              DropdownButtonFormField(
+                                initialValue: _selectedHospital,
+                                decoration: InputDecoration(
+                                  labelStyle: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                  hintText:
+                                      hospitalState.status ==
+                                          HospitalStatus.loading
+                                      ? "Loading Hospitals..."
+                                      : "Choose Hospital",
+                                  hintStyle: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.grey,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFFA72636),
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 18,
+                                  ),
+                                ),
+                                items: hospitalState.hospitals
+                                    .where((hospital) => hospital.isActive)
+                                    .map((hospital) {
+                                      return DropdownMenuItem<String>(
+                                        value: hospital.id,
+                                        child: Text(hospital.name),
+                                      );
+                                    })
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedHospital = value;
+                                  });
+                                },
                               ),
-                            ),
+
+                              if (_isOthers) ...[
+                                const SizedBox(height: 25),
+                                Text(
+                                  "Patient's Information:",
+                                  style: TextStyle(
+                                    fontSize: compact ? 18 : 20,
+                                    fontFamily: "BricolageGrotesque SemiBold",
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                MyTextFormField(
+                                  controller: _relationController,
+                                  hintText:
+                                      "Relation to patient (e.g. Brother)",
+                                  validator: (v) {
+                                    if (!_isOthers) return null;
+                                    if (v == null || v.trim().length < 2) {
+                                      return "Relation is required";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                MyTextFormField(
+                                  controller: _patientNameController,
+                                  hintText: "Patient name",
+                                  validator: (v) {
+                                    if (!_isOthers) return null;
+                                    if (v == null || v.trim().length < 2) {
+                                      return "Patient name is required";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _patientPhoneController,
+                                  keyboardType: TextInputType.phone,
+                                  decoration: InputDecoration(
+                                    hintText: "Patient phone number",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  validator: (v) {
+                                    if (!_isOthers) return null;
+                                    if (v == null || v.trim().length < 6) {
+                                      return "Patient phone is required";
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ],
+
+                              const SizedBox(height: 25),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _handlePostRequest,
+                                  child: const Text("Post Request"),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),

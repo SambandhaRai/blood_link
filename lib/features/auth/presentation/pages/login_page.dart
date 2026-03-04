@@ -49,8 +49,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
       if (next.status == AuthStatus.error && next.errorMessage != null) {
         SnackbarUtils.showError(context, next.errorMessage!);
@@ -60,239 +58,235 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFEC99A4), // top color
-              Color(0xFFA72636), // bottom color
-            ],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                // Prevent stretching on tablets/larger displays
-                maxWidth: screenWidth > 600 ? 500 : double.infinity,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = constraints.maxWidth;
+          final compact = screenWidth < 360;
+          final maxContentWidth = screenWidth > 900 ? 560.0 : 500.0;
+
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFEC99A4), Color(0xFFA72636)],
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Back arrow and Logo
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Back Arrow at top-left
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const OnBoardingPage(),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 30),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: maxContentWidth),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const OnBoardingPage(),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.white,
+                                  size: compact ? 24 : 30,
+                                ),
                               ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                      // Logo centered
-                      Image.asset(
-                        'assets/images/small_logo.png',
-                        width: 50,
-                        height: 50,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Container for Login form
-                  Container(
-                    padding: const EdgeInsets.all(20), // inner spacing
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withAlpha((0.2 * 255).round()),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Title
-                          Text(
-                            "Login",
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontFamily: 'BricolageGrotesque SemiBold',
-                              fontSize: 40,
-                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Subtitle
-                          RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              text: "Don't have an account?",
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontFamily: 'BricolageGrotesque ExtraLight',
-                                fontSize: 15,
+                            Image.asset(
+                              'assets/images/small_logo.png',
+                              width: compact ? 40 : 50,
+                              height: compact ? 40 : 50,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: compact ? 8 : 10),
+                        Container(
+                          padding: EdgeInsets.all(compact ? 16 : 20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withAlpha(
+                                  (0.2 * 255).round(),
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
                               ),
+                            ],
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                TextSpan(
-                                  text: " Sign Up",
-                                  style: const TextStyle(
-                                    color: Color(0xFFA72636),
-                                    fontSize: 15,
-                                    fontFamily: "BricolageGrotesque SemiBold",
+                                Text(
+                                  "Login",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'BricolageGrotesque SemiBold',
+                                    fontSize: compact ? 30 : 40,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  recognizer: _tapGestureRecognizer
-                                    ..onTap = () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SignUpPage(),
+                                ),
+                                SizedBox(height: compact ? 8 : 10),
+                                RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    text: "Don't have an account?",
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontFamily:
+                                          'BricolageGrotesque ExtraLight',
+                                      fontSize: 15,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: " Sign Up",
+                                        style: const TextStyle(
+                                          color: Color(0xFFA72636),
+                                          fontSize: 15,
+                                          fontFamily:
+                                              "BricolageGrotesque SemiBold",
                                         ),
-                                      );
+                                        recognizer: _tapGestureRecognizer
+                                          ..onTap = () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const SignUpPage(),
+                                              ),
+                                            );
+                                          },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: compact ? 16 : 20),
+                                MyTextFormField(
+                                  controller: _emailController,
+                                  labelText: "Enter your email",
+                                  hintText: "abc@gmail.com",
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your email';
+                                    }
+                                    if (!RegExp(
+                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                    ).hasMatch(value)) {
+                                      return 'Please enter a valid email';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: compact ? 16 : 20),
+                                MyTextFormField(
+                                  controller: _pwController,
+                                  labelText: "Enter your password",
+                                  hintText: "Password",
+                                  obscureText: _obscurePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.grey,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
                                     },
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a password';
+                                    }
+                                    if (value.length < 6) {
+                                      return 'Password must be at least 6 characters';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: compact ? 8 : 10),
+                                Wrap(
+                                  alignment: WrapAlignment.spaceBetween,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  spacing: 8,
+                                  runSpacing: 6,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Checkbox(
+                                          value: _rememberMe,
+                                          activeColor: const Color(0xFFA72636),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _rememberMe = value ?? false;
+                                            });
+                                          },
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        const Text(
+                                          "Remember Me",
+                                          style: TextStyle(
+                                            fontFamily:
+                                                'BricolageGrotesque ExtraLight',
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        // Navigate to forgot password screen or show dialog
+                                      },
+                                      child: const Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                          fontFamily:
+                                              'BricolageGrotesque SemiBold',
+                                          fontSize: 14,
+                                          color: Color(0xFFA72636),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: compact ? 16 : 20),
+                                ElevatedButton(
+                                  onPressed: _handleLogin,
+                                  child: const Text("Login"),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
-
-                          // Email Input
-                          MyTextFormField(
-                            controller: _emailController,
-                            labelText: "Enter your email",
-                            hintText: "abc@gmail.com",
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              if (!RegExp(
-                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
-                                return 'Please enter a valid email';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Password Input
-                          MyTextFormField(
-                            controller: _pwController,
-                            labelText: "Enter your password",
-                            hintText: "Password",
-                            obscureText: _obscurePassword,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a password';
-                              }
-                              if (value.length < 6) {
-                                return 'Password must be at least 6 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Remember me + Forgot Password
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: _rememberMe,
-                                    activeColor: const Color(0xFFA72636),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _rememberMe = value ?? false;
-                                      });
-                                    },
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  ),
-                                  Text(
-                                    "Remember Me",
-                                    style: TextStyle(
-                                      fontFamily:
-                                          'BricolageGrotesque ExtraLight',
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              // Forgot Password clickable text
-                              GestureDetector(
-                                onTap: () {
-                                  // Navigate to forgot password screen or show dialog
-                                },
-                                child: const Text(
-                                  "Forgot Password?",
-                                  style: TextStyle(
-                                    fontFamily: 'BricolageGrotesque SemiBold',
-                                    fontSize: 14,
-                                    color: Color(0xFFA72636),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Login Button
-                          ElevatedButton(
-                            onPressed: _handleLogin,
-                            child: Text("Login"),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

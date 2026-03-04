@@ -151,6 +151,8 @@ class RequestRepository implements IRequestRepository {
     try {
       final model = await _requestRemoteDatasource.acceptRequest(requestId);
       return Right(model.toEntity());
+    } on DioException catch (e) {
+      return Left(ApiFailure(message: e.toString()));
     } catch (e) {
       return Left(ApiFailure(message: e.toString()));
     }

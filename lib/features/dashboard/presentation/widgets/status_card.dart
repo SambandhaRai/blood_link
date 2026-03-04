@@ -19,6 +19,10 @@ class _StatusCardState extends ConsumerState<StatusCard> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cardHeight = screenWidth < 360 ? 84.0 : 96.0;
+    final iconSize = screenWidth < 360 ? 40.0 : 50.0;
+
     final userSessionService = ref.read(userSessionServiceProvider);
     final bloodGroupName =
         userSessionService.getCurrentUserBloodGroupName() ?? "Unknown";
@@ -28,9 +32,9 @@ class _StatusCardState extends ConsumerState<StatusCard> {
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: SizedBox(
-        height: 90,
+        height: cardHeight,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -39,8 +43,8 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                 child: StatusItem(
                   icon: SvgPicture.asset(
                     'assets/icons/blood_group_icon.svg',
-                    width: 50,
-                    height: 50,
+                    width: iconSize,
+                    height: iconSize,
                   ),
                   status: bloodGroupName,
                   label: 'Blood Group',
@@ -50,8 +54,8 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                 child: StatusItem(
                   icon: SvgPicture.asset(
                     'assets/icons/donor_status_icon.svg',
-                    width: 50,
-                    height: 50,
+                    width: iconSize,
+                    height: iconSize,
                   ),
                   status: 'Allowed',
                   label: 'Donor Status',

@@ -1,8 +1,8 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/location/location_service.dart';
-import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
+import 'package:blood_link/core/utils/snackbar_utils.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request_list.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
-import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +18,7 @@ class RequestScreen extends ConsumerStatefulWidget {
 class _RequestScreenState extends ConsumerState<RequestScreen> {
   double? _lat;
   double? _lng;
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
@@ -33,9 +34,7 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              "Enable location permission and GPS to fetch matched requests.",
-            ),
+            content: Text("Enable location permission fetch matched requests."),
           ),
         );
       }
@@ -48,6 +47,27 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
 
   Future<void> _loadAllPendingRequests() async {
     await ref.read(requestViewModelProvider.notifier).getAllPendingRequests();
+  }
+
+  Future<void> _handleAcceptRequest(String requestId) async {
+    await ref.read(requestViewModelProvider.notifier).acceptRequest(requestId);
+    if (!mounted) return;
+
+    final updatedState = ref.read(requestViewModelProvider);
+    if (updatedState.status == RequestStatus.error) {
+      SnackbarUtils.showError(
+        context,
+        updatedState.errorMessage ?? "Failed to accept request.",
+      );
+      return;
+    }
+
+    SnackbarUtils.showSuccess(context, "Request accepted successfully.");
+    if (_currentTabIndex == 0) {
+      await _loadMatchedRequests();
+      return;
+    }
+    await _loadAllPendingRequests();
   }
 
   Future<SavedLocation?> _getCoordinates() async {
@@ -72,6 +92,10 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
   @override
   Widget build(BuildContext context) {
     final requestState = ref.watch(requestViewModelProvider);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final statusHeaderHeight = compact ? 50.0 : 60.0;
+    final tabLabelSize = compact ? 12.0 : 14.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -80,10 +104,6 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
         elevation: 0,
         toolbarHeight: 80,
         titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: Text(
           "Requests",
           style: TextStyle(
@@ -103,7 +123,7 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    height: 60,
+                    height: statusHeaderHeight,
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: Color(0xFFA72636),
@@ -123,48 +143,73 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 40, 10, 0),
-                  child: Column(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: TabBar(
-                          onTap: (index) {
-                            if (index == 0) {
-                              _loadMatchedRequests();
-                            } else {
-                              _loadAllPendingRequests();
-                            }
-                          },
-                          labelColor: AppColors.primary,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: AppColors.primary,
-                          tabs: const [
-                            Tab(text: "Matched Requests"),
-                            Tab(text: "All Requests"),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: TabBarView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: [
-                            _RequestList(
-                              requestState: requestState,
-                              onRetry: _loadMatchedRequests,
+                  padding: EdgeInsets.fromLTRB(10, compact ? 44 : 50, 10, 0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey, blurRadius: 10),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: TabBar(
+                            labelStyle: TextStyle(
+                              fontFamily: "BricolageGrotesque Medium",
+                              fontSize: tabLabelSize,
                             ),
-                            _RequestList(
-                              requestState: requestState,
-                              onRetry: _loadAllPendingRequests,
-                            ),
-                          ],
+                            onTap: (index) {
+                              _currentTabIndex = index;
+                              if (index == 0) {
+                                _loadMatchedRequests();
+                              } else {
+                                _loadAllPendingRequests();
+                              }
+                            },
+                            labelColor: AppColors.primary,
+                            unselectedLabelColor: Colors.grey,
+                            indicatorColor: AppColors.primary,
+                            tabs: const [
+                              Tab(
+                                child: FittedBox(
+                                  child: Text("Matched Requests"),
+                                ),
+                              ),
+                              Tab(
+                                child: FittedBox(child: Text("All Requests")),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TabBarView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: [
+                                RequestList(
+                                  requestState: requestState,
+                                  onRetry: _loadMatchedRequests,
+                                  onAcceptRequest: _handleAcceptRequest,
+                                ),
+                                RequestList(
+                                  requestState: requestState,
+                                  onRetry: _loadAllPendingRequests,
+                                  onAcceptRequest: _handleAcceptRequest,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -173,147 +218,5 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
         ),
       ),
     );
-  }
-}
-
-class _RequestList extends StatelessWidget {
-  final RequestState requestState;
-  final VoidCallback onRetry;
-
-  const _RequestList({required this.requestState, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    final requests = [...requestState.requests]
-      ..sort((a, b) {
-        final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bDate.compareTo(aDate);
-      });
-
-    if (requestState.status == RequestStatus.loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (requestState.status == RequestStatus.error) {
-      final errorText = requestState.errorMessage ?? 'Failed to load requests.';
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                color: AppColors.primary,
-                size: 40,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                errorText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: "BricolageGrotesque Medium",
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 14),
-              ElevatedButton(
-                onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text("Retry"),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (requests.isEmpty) {
-      return const Center(child: Text("No requests found."));
-    }
-
-    final groupedRequests = <DateTime, List<RequestEntity>>{};
-    for (final req in requests) {
-      final rawDate = req.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final dayKey = DateTime(rawDate.year, rawDate.month, rawDate.day);
-      groupedRequests.putIfAbsent(dayKey, () => []);
-      groupedRequests[dayKey]!.add(req);
-    }
-
-    return ListView.separated(
-      itemCount: groupedRequests.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        final date = groupedRequests.keys.elementAt(index);
-        final dailyRequests = groupedRequests[date]!;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 20, 0, 5),
-              child: Text(
-                _formatDateHeaderStatic(date),
-                style: const TextStyle(
-                  fontFamily: "BricolageGrotesque Medium",
-                  fontSize: 18,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: dailyRequests.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final req = dailyRequests[index];
-                return RequestCard(
-                  bloodGroup: req.recipientBlood!.bloodGroup,
-                  requestStatus: req.requestStatus ?? "pending",
-                  hospitalName: req.hospital!.name,
-                  distance: "—",
-                  profileFileName: req.receiver?.profilePicture,
-                  fallbackLetter: (req.receiver?.fullName ?? "U").trim(),
-                  onAccept: () {
-                    // TODO: accept request
-                  },
-                  onDecline: () {
-                    // TODO: decline request
-                  },
-                  onViewDetails: () {
-                    // TODO: open details page
-                  },
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String _formatDateHeaderStatic(DateTime date) {
-    const months = <String>[
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

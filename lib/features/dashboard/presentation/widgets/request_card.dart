@@ -12,8 +12,7 @@ class RequestCard extends StatelessWidget {
     this.profileFileName,
     required this.fallbackLetter,
 
-    required this.onAccept,
-    required this.onDecline,
+    this.onAccept,
     required this.onViewDetails,
   });
 
@@ -25,12 +24,17 @@ class RequestCard extends StatelessWidget {
   final String? profileFileName;
   final String fallbackLetter;
 
-  final VoidCallback onAccept;
-  final VoidCallback onDecline;
+  final VoidCallback? onAccept;
   final VoidCallback onViewDetails;
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final avatarRadius = compact ? 24.0 : 30.0;
+    final avatarSize = compact ? 48.0 : 60.0;
+    final actionFontSize = compact ? 12.0 : 14.0;
+
     final profileImageUrl =
         (profileFileName != null && profileFileName!.isNotEmpty)
         ? ApiEndpoints.profilePicture(profileFileName!)
@@ -41,26 +45,27 @@ class RequestCard extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: EdgeInsets.all(compact ? 8 : 10),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Network profile picture
             CircleAvatar(
-              radius: 30,
+              radius: avatarRadius,
               backgroundColor: Colors.white,
               child: ClipOval(
                 child: (profileImageUrl != null)
                     ? Image.network(
                         profileImageUrl,
-                        width: 60,
-                        height: 60,
+                        width: avatarSize,
+                        height: avatarSize,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Center(
+                        errorBuilder: (_, error, stackTrace) => Center(
                           child: Text(
                             fallbackLetter.isNotEmpty
                                 ? fallbackLetter[0].toUpperCase()
                                 : "U",
-                            style: const TextStyle(fontSize: 22),
+                            style: TextStyle(fontSize: compact ? 18 : 22),
                           ),
                         ),
                       )
@@ -69,13 +74,13 @@ class RequestCard extends StatelessWidget {
                           fallbackLetter.isNotEmpty
                               ? fallbackLetter[0].toUpperCase()
                               : "U",
-                          style: const TextStyle(fontSize: 22),
+                          style: TextStyle(fontSize: compact ? 18 : 22),
                         ),
                       ),
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: compact ? 8 : 12),
 
             Expanded(
               child: Column(
@@ -83,15 +88,18 @@ class RequestCard extends StatelessWidget {
                 children: [
                   Text(
                     bloodGroup,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Bricolage Grotesque',
-                      fontSize: 15,
+                      fontSize: compact ? 14 : 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
                     "Status: $requestStatus",
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: compact ? 11 : 12,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Row(
@@ -105,7 +113,9 @@ class RequestCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           "$distance, $hospitalName",
-                          style: const TextStyle(fontSize: 12),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: compact ? 11 : 12),
                         ),
                       ),
                     ],
@@ -125,24 +135,40 @@ class RequestCard extends StatelessWidget {
               ),
             ),
 
-            Column(
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            SizedBox(
+              width: compact ? 92 : 106,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        vertical: compact ? 8 : 10,
+                        horizontal: compact ? 6 : 10,
+                      ),
+                    ),
+                    onPressed: onAccept,
+                    child: Text(
+                      "Accept",
+                      style: TextStyle(fontSize: actionFontSize),
+                    ),
                   ),
-                  onPressed: onAccept,
-                  child: const Text("Accept", style: TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(height: 2),
-                OutlinedButton(
-                  onPressed: onDecline,
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  const SizedBox(height: 2),
+                  OutlinedButton(
+                    onPressed: onViewDetails,
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        vertical: compact ? 8 : 10,
+                        horizontal: compact ? 6 : 10,
+                      ),
+                    ),
+                    child: Text(
+                      "View Details",
+                      style: TextStyle(fontSize: actionFontSize),
+                    ),
                   ),
-                  child: Text("Decline", style: TextStyle(fontSize: 18)),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
