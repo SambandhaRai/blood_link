@@ -6,7 +6,7 @@ class ApiEndpoints {
 
   // =================== Configuration ===================
   static const bool isPhysicalDevice = false;
-  static const String _ipAddress = '192.168.1.1';
+  static const String _ipAddress = '192.168.101.8';
   static const int _port = 5050;
 
   // =================== Base URLs ===================
@@ -38,6 +38,10 @@ class ApiEndpoints {
   static const String userProfile = '/user/profile';
   static const String uploadProfilePicture = '/user/profile/upload';
   static const String updateUserProfile = '/user/update-profile';
+  static String lockDonorActiveRequest(String userId, String requestId) =>
+      '$user/$userId/lock-active-request/$requestId';
+  static String unlockDonorActiveRequest(String userId, String requestId) =>
+      '$user/$userId/unlock-active-request/$requestId';
 
   // =================== Media Helpers===================
   /// Profile picture URL

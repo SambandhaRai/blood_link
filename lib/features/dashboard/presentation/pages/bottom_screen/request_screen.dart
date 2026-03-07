@@ -1,10 +1,12 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/location/location_service.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
-import 'package:blood_link/features/dashboard/presentation/widgets/request_list.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request/request_list.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
+import 'package:blood_link/features/user/presentation/state/user_state.dart';
+import 'package:blood_link/features/user/presentation/view_model/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +21,9 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
   double? _lat;
   double? _lng;
   int _currentTabIndex = 0;
+  int _matchedPage = 1;
+  int _allPage = 1;
+  static const int _pageSize = 10;
 
   @override
   void initState() {
@@ -28,7 +33,7 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
     });
   }
 
-  Future<void> _loadMatchedRequests() async {
+  Future<void> _loadMatchedRequests({int? page}) async {
     final coords = await _getCoordinates();
     if (coords == null) {
       if (mounted) {
@@ -40,16 +45,53 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
       }
       return;
     }
+    final nextPage = page ?? _matchedPage;
+    _matchedPage = nextPage;
     await ref
         .read(requestViewModelProvider.notifier)
-        .getMatchedRequests(lat: coords.lat, lng: coords.lng);
+        .getMatchedRequests(
+          lat: coords.lat,
+          lng: coords.lng,
+          page: nextPage,
+          size: _pageSize,
+        );
   }
 
-  Future<void> _loadAllPendingRequests() async {
-    await ref.read(requestViewModelProvider.notifier).getAllPendingRequests();
+  Future<void> _loadAllPendingRequests({int? page}) async {
+    final nextPage = page ?? _allPage;
+    _allPage = nextPage;
+    await ref
+        .read(requestViewModelProvider.notifier)
+        .getAllPendingRequests(page: nextPage, size: _pageSize);
   }
 
   Future<void> _handleAcceptRequest(String requestId) async {
+    await ref.read(userViewmodelProvider.notifier).getCurrentUserProfile();
+    if (!mounted) return;
+
+    final userState = ref.read(userViewmodelProvider);
+    if (userState.status == UserStatus.error) {
+      SnackbarUtils.showError(
+        context,
+        userState.errorMessage ?? "Failed to validate active request.",
+      );
+      return;
+    }
+
+    final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
+    if (activeAcceptedRequestId != null &&
+        activeAcceptedRequestId.isNotEmpty &&
+        activeAcceptedRequestId != requestId) {
+      SnackbarUtils.showWarning(
+        context,
+        "You can accept only one request at a time. Finish your active request first.",
+      );
+      return;
+    }
+
+    final shouldAccept = await _showAcceptConfirmation();
+    if (!shouldAccept || !mounted) return;
+
     await ref.read(requestViewModelProvider.notifier).acceptRequest(requestId);
     if (!mounted) return;
 
@@ -64,10 +106,38 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
 
     SnackbarUtils.showSuccess(context, "Request accepted successfully.");
     if (_currentTabIndex == 0) {
-      await _loadMatchedRequests();
+      await _loadMatchedRequests(page: _matchedPage);
       return;
     }
-    await _loadAllPendingRequests();
+    await _loadAllPendingRequests(page: _allPage);
+  }
+
+  Future<bool> _showAcceptConfirmation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            "Accept Request",
+            style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
+          ),
+          content: const Text("Are you sure you want to accept this request?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Accept"),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirmed ?? false;
   }
 
   Future<SavedLocation?> _getCoordinates() async {
@@ -167,9 +237,9 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
                             onTap: (index) {
                               _currentTabIndex = index;
                               if (index == 0) {
-                                _loadMatchedRequests();
+                                _loadMatchedRequests(page: _matchedPage);
                               } else {
-                                _loadAllPendingRequests();
+                                _loadAllPendingRequests(page: _allPage);
                               }
                             },
                             labelColor: AppColors.primary,
@@ -196,18 +266,78 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
                               children: [
                                 RequestList(
                                   requestState: requestState,
-                                  onRetry: _loadMatchedRequests,
+                                  onRetry: () =>
+                                      _loadMatchedRequests(page: _matchedPage),
                                   onAcceptRequest: _handleAcceptRequest,
                                 ),
                                 RequestList(
                                   requestState: requestState,
-                                  onRetry: _loadAllPendingRequests,
+                                  onRetry: () =>
+                                      _loadAllPendingRequests(page: _allPage),
                                   onAcceptRequest: _handleAcceptRequest,
                                 ),
                               ],
                             ),
                           ),
                         ),
+                        if (requestState.status == RequestStatus.loaded &&
+                            requestState.totalPages > 1)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: requestState.page > 1
+                                        ? () {
+                                            if (_currentTabIndex == 0) {
+                                              _loadMatchedRequests(
+                                                page: requestState.page - 1,
+                                              );
+                                            } else {
+                                              _loadAllPendingRequests(
+                                                page: requestState.page - 1,
+                                              );
+                                            }
+                                          }
+                                        : null,
+                                    child: const Text("Previous"),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Text(
+                                    "Page ${requestState.page} / ${requestState.totalPages}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        requestState.page <
+                                            requestState.totalPages
+                                        ? () {
+                                            if (_currentTabIndex == 0) {
+                                              _loadMatchedRequests(
+                                                page: requestState.page + 1,
+                                              );
+                                            } else {
+                                              _loadAllPendingRequests(
+                                                page: requestState.page + 1,
+                                              );
+                                            }
+                                          }
+                                        : null,
+                                    child: const Text("Next"),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
