@@ -1,5 +1,10 @@
 import 'package:blood_link/features/request/data/models/create_request_api_model.dart';
 import 'package:blood_link/features/request/data/models/request_api_model.dart';
+import 'package:blood_link/features/request/data/models/request_hive_model.dart';
+
+abstract interface class IRequestLocalDatasource {
+  Future<List<RequestHiveModel>> getAllRequests({int? amount});
+}
 
 abstract interface class IRequestRemoteDatasource {
   Future<RequestApiModel> createRequest(CreateRequestApiModel request);

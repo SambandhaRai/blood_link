@@ -1,7 +1,9 @@
 import 'package:blood_link/core/error/failures.dart';
 import 'package:blood_link/core/services/connectivity/network_info.dart';
+import 'package:blood_link/features/request/data/datasource/local/request_local_datasource.dart';
 import 'package:blood_link/features/request/data/datasource/remote/request_remote_datasource.dart';
 import 'package:blood_link/features/request/data/models/create_request_api_model.dart';
+import 'package:blood_link/features/request/data/models/request_hive_model.dart';
 import 'package:blood_link/features/request/domain/entities/create_request_entity.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:blood_link/features/request/domain/repositories/request_repository.dart';
@@ -11,19 +13,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final requestRepositoryProvider = Provider<IRequestRepository>((ref) {
   return RequestRepository(
+    requestLocalDatasource: ref.read(requestLocalDatasourceProvider),
     requestRemoteDatasource: ref.read(requestRemoteDatasourceProvider),
     networkInfo: ref.read(networkInfoProvider),
   );
 });
 
 class RequestRepository implements IRequestRepository {
+  static const int _pendingRequestCacheLimit = 4;
+  static const int _historyCacheLimitPerSection = 4;
+
+  final RequestLocalDatasource _requestLocalDatasource;
   final RequestRemoteDatasource _requestRemoteDatasource;
   final NetworkInfo _networkInfo;
 
   RequestRepository({
+    required RequestLocalDatasource requestLocalDatasource,
     required RequestRemoteDatasource requestRemoteDatasource,
     required NetworkInfo networkInfo,
-  }) : _requestRemoteDatasource = requestRemoteDatasource,
+  }) : _requestLocalDatasource = requestLocalDatasource,
+       _requestRemoteDatasource = requestRemoteDatasource,
        _networkInfo = networkInfo;
 
   String _dioErrorMessage(
@@ -147,7 +156,22 @@ class RequestRepository implements IRequestRepository {
   >
   getAllPendingRequests({int page = 1, int size = 10, String? search}) async {
     if (!await _networkInfo.isConnected) {
-      return Left(NetworkFailure(message: "No Internet Connection"));
+      final cachedRequests = await _requestLocalDatasource.getAllRequests(
+        amount: size,
+      );
+      if (cachedRequests.isNotEmpty) {
+        final entities = cachedRequests.map((e) => e.toEntity()).toList();
+        return Right((
+          requests: entities,
+          page: 1,
+          size: entities.length,
+          total: entities.length,
+          totalPages: 1,
+        ));
+      }
+      return Left(
+        NetworkFailure(message: "No Internet Connection and no cached data"),
+      );
     }
 
     try {
@@ -157,8 +181,15 @@ class RequestRepository implements IRequestRepository {
         search: search,
       );
 
+      final entities = result.requests.map((e) => e.toEntity()).toList();
+      final hiveModels = RequestHiveModel.fromApiModelList(result.requests);
+      await _requestLocalDatasource.cachePendingRequests(
+        hiveModels,
+        amount: _pendingRequestCacheLimit,
+      );
+
       return Right((
-        requests: result.requests.map((e) => e.toEntity()).toList(),
+        requests: entities,
         page: result.page,
         size: result.size,
         total: result.total,
@@ -186,10 +217,53 @@ class RequestRepository implements IRequestRepository {
   >
   getMyHistory() async {
     if (!await _networkInfo.isConnected) {
-      return Left(NetworkFailure(message: "No Internet Connection"));
+      final cached = await _requestLocalDatasource.getCachedHistoryRequests();
+      final donated = cached.donated.map((e) => e.toEntity()).toList();
+      final requestedOngoing = cached.ongoing.requestedOngoing
+          .map((e) => e.toEntity())
+          .toList();
+      final donationOngoing = cached.ongoing.donationOngoing
+          .map((e) => e.toEntity())
+          .toList();
+      final received = cached.received.map((e) => e.toEntity()).toList();
+
+      final hasAnyHistory =
+          donated.isNotEmpty ||
+          requestedOngoing.isNotEmpty ||
+          donationOngoing.isNotEmpty ||
+          received.isNotEmpty;
+
+      if (!hasAnyHistory) {
+        return Left(
+          NetworkFailure(
+            message: "No Internet Connection and no cached history data",
+          ),
+        );
+      }
+
+      return Right((
+        donated: donated,
+        ongoing: (
+          requestedOngoing: requestedOngoing,
+          donationOngoing: donationOngoing,
+        ),
+        received: received,
+      ));
     }
     try {
       final result = await _requestRemoteDatasource.getMyHistory();
+
+      await _requestLocalDatasource.cacheHistoryRequests(
+        donated: RequestHiveModel.fromApiModelList(result.donated),
+        requestedOngoing: RequestHiveModel.fromApiModelList(
+          result.ongoing.requestedOngoing,
+        ),
+        donationOngoing: RequestHiveModel.fromApiModelList(
+          result.ongoing.donationOngoing,
+        ),
+        received: RequestHiveModel.fromApiModelList(result.received),
+        amountPerSection: _historyCacheLimitPerSection,
+      );
 
       return Right((
         donated: result.donated.map((e) => e.toEntity()).toList(),
