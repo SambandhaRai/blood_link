@@ -3,47 +3,43 @@ import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:flutter/material.dart';
 
-class HistoryDetailsDialog extends StatelessWidget {
-  const HistoryDetailsDialog({
+class RequestDetailsDialog extends StatelessWidget {
+  const RequestDetailsDialog({
     super.key,
     required this.request,
     required this.personName,
     this.personProfileFileName,
-    required this.userIdLabel,
-    this.userIdValue,
-    required this.canFinish,
-    required this.onFinishRequest,
+    this.distanceText,
+    required this.canAccept,
+    required this.onAcceptRequest,
   });
 
   final RequestEntity request;
   final String personName;
   final String? personProfileFileName;
-  final String userIdLabel;
-  final String? userIdValue;
-  final bool canFinish;
-  final Future<void> Function(String requestId) onFinishRequest;
+  final String? distanceText;
+  final bool canAccept;
+  final Future<void> Function(String requestId) onAcceptRequest;
 
   static Future<void> show(
     BuildContext context, {
     required RequestEntity request,
     required String personName,
     String? personProfileFileName,
-    required String userIdLabel,
-    String? userIdValue,
-    required bool canFinish,
-    required Future<void> Function(String requestId) onFinishRequest,
+    String? distanceText,
+    required bool canAccept,
+    required Future<void> Function(String requestId) onAcceptRequest,
   }) async {
     await showDialog<void>(
       context: context,
       barrierColor: Colors.black54,
-      builder: (_) => HistoryDetailsDialog(
+      builder: (_) => RequestDetailsDialog(
         request: request,
         personName: personName,
         personProfileFileName: personProfileFileName,
-        userIdLabel: userIdLabel,
-        userIdValue: userIdValue,
-        canFinish: canFinish,
-        onFinishRequest: onFinishRequest,
+        distanceText: distanceText,
+        canAccept: canAccept,
+        onAcceptRequest: onAcceptRequest,
       ),
     );
   }
@@ -84,10 +80,6 @@ class HistoryDetailsDialog extends StatelessWidget {
     final bloodGroup = request.recipientBlood?.bloodGroup ?? "-";
     final hospitalName = request.hospital?.name ?? "Unknown Hospital";
     final condition = request.recipientCondition.name;
-    final status = (request.requestStatus ?? "pending").trim();
-    final statusDisplay = status.isEmpty
-        ? "Pending"
-        : "${status[0].toUpperCase()}${status.substring(1)}";
     final requestFor = request.requestFor.name.toUpperCase();
     final ribbonColor = _conditionColor(condition);
     final timeText = _timeAgo(request.updatedAt ?? request.createdAt);
@@ -96,10 +88,7 @@ class HistoryDetailsDialog extends StatelessWidget {
     final patientPhone =
         request.patientPhone ?? request.receiver?.phoneNumber ?? "-";
     final patientEmail = request.receiver?.email ?? "-";
-    final donorName = request.donor?.fullName ?? "-";
-    final donorPhone = request.donor?.phoneNumber ?? "-";
-    final donorEmail = request.donor?.email ?? "-";
-    final showDonorInfo = status.toLowerCase() == "accepted";
+    final receiverId = request.receiver?.userId;
 
     final profileUrl =
         personProfileFileName != null && personProfileFileName!.isNotEmpty
@@ -194,11 +183,11 @@ class HistoryDetailsDialog extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            if (userIdValue != null &&
-                                userIdValue!.isNotEmpty) ...[
+                            if (receiverId != null &&
+                                receiverId.isNotEmpty) ...[
                               const SizedBox(height: 3),
                               Text(
-                                "$userIdLabel: $userIdValue",
+                                "Receiver ID: $receiverId",
                                 style: TextStyle(
                                   color: Colors.black54,
                                   fontSize: compact ? 12 : 13,
@@ -251,6 +240,17 @@ class HistoryDetailsDialog extends StatelessWidget {
                         ),
                     ],
                   ),
+                  if (distanceText != null && distanceText!.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        "Distance: $distanceText",
+                        style: TextStyle(
+                          color: const Color(0xFF667085),
+                          fontSize: compact ? 12 : 13,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 20),
                   Text(
                     "Recipient's Detail:",
@@ -262,22 +262,6 @@ class HistoryDetailsDialog extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     request.recipientDetails,
-                    style: TextStyle(
-                      color: const Color(0xFF344054),
-                      fontSize: compact ? 14 : 15,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Status:",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: compact ? 16 : 17,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    statusDisplay,
                     style: TextStyle(
                       color: const Color(0xFF344054),
                       fontSize: compact ? 14 : 15,
@@ -372,96 +356,21 @@ class HistoryDetailsDialog extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (showDonorInfo) ...[
-                    const SizedBox(height: 18),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: compact ? 12 : 16,
-                        vertical: compact ? 12 : 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE4E7EC)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Donor Info:",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: compact ? 16 : 17,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "Donor Name",
-                            style: TextStyle(
-                              color: const Color(0xFF667085),
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                          Text(
-                            donorName,
-                            style: TextStyle(
-                              color: const Color(0xFF1D2939),
-                              fontWeight: FontWeight.w600,
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "Donor Phone",
-                            style: TextStyle(
-                              color: const Color(0xFF667085),
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                          Text(
-                            donorPhone,
-                            style: TextStyle(
-                              color: const Color(0xFF1D2939),
-                              fontWeight: FontWeight.w600,
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "Donor Email",
-                            style: TextStyle(
-                              color: const Color(0xFF667085),
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                          Text(
-                            donorEmail,
-                            style: TextStyle(
-                              color: const Color(0xFF1D2939),
-                              fontWeight: FontWeight.w600,
-                              fontSize: compact ? 14 : 15,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      if (canFinish && request.requestId != null) ...[
+                      if (canAccept && request.requestId != null) ...[
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
                               Navigator.pop(context);
-                              await onFinishRequest(request.requestId!);
+                              await onAcceptRequest(request.requestId!);
                             },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               backgroundColor: const Color(0xFFB30717),
                             ),
-                            child: const Text("Finish"),
+                            child: const Text("Accept"),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -472,7 +381,7 @@ class HistoryDetailsDialog extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: Text(canFinish ? "Close" : "Delete"),
+                          child: Text(canAccept ? "Close" : "Back"),
                         ),
                       ),
                     ],

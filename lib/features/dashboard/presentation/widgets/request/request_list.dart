@@ -1,29 +1,45 @@
+import 'dart:math' as math;
+
 import 'package:blood_link/app/theme/app_colors.dart';
+import 'package:blood_link/core/services/location/location_service.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/request/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request/request_details.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RequestList extends StatelessWidget {
+class RequestList extends ConsumerWidget {
   final RequestState requestState;
   final VoidCallback onRetry;
   final Future<void> Function(String requestId) onAcceptRequest;
+  final bool shrinkWrap;
+  final ScrollPhysics? physics;
+  final int? maxItems;
 
   const RequestList({
     super.key,
     required this.requestState,
     required this.onRetry,
     required this.onAcceptRequest,
+    this.shrinkWrap = false,
+    this.physics,
+    this.maxItems,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedLocation = ref.read(locationServiceProvider).getSavedLocation();
+
     final requests = [...requestState.requests]
       ..sort((a, b) {
         final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
         final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
         return bDate.compareTo(aDate);
       });
+    final limitedRequests = maxItems != null
+        ? requests.take(maxItems!).toList()
+        : requests;
 
     if (requestState.status == RequestStatus.loading) {
       return const Center(child: CircularProgressIndicator());
@@ -67,12 +83,12 @@ class RequestList extends StatelessWidget {
       );
     }
 
-    if (requests.isEmpty) {
+    if (limitedRequests.isEmpty) {
       return const Center(child: Text("No requests found."));
     }
 
     final groupedRequests = <DateTime, List<RequestEntity>>{};
-    for (final req in requests) {
+    for (final req in limitedRequests) {
       final rawDate = req.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
       final dayKey = DateTime(rawDate.year, rawDate.month, rawDate.day);
       groupedRequests.putIfAbsent(dayKey, () => []);
@@ -80,6 +96,8 @@ class RequestList extends StatelessWidget {
     }
 
     return ListView.separated(
+      shrinkWrap: shrinkWrap,
+      physics: physics,
       itemCount: groupedRequests.length,
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
@@ -113,18 +131,40 @@ class RequestList extends StatelessWidget {
                     (req.requestStatus ?? "").toLowerCase() == "pending";
                 final canAccept =
                     isPending && requestId != null && requestId.isNotEmpty;
+
+                final hospitalLocation = req.hospital?.location;
+                final distanceText =
+                    savedLocation != null && hospitalLocation != null
+                    ? _formatDistanceKm(
+                        _haversineDistanceKm(
+                          userLat: savedLocation.lat,
+                          userLng: savedLocation.lng,
+                          targetLat: hospitalLocation.latitude,
+                          targetLng: hospitalLocation.longitude,
+                        ),
+                      )
+                    : "—";
+
                 return RequestCard(
                   bloodGroup: req.recipientBlood?.bloodGroup ?? "-",
                   requestStatus: req.requestStatus ?? "pending",
                   recipientCondition: req.recipientCondition.name,
                   hospitalName: req.hospital?.name ?? "Unknown Hospital",
-                  distance: "—",
+                  distance: distanceText,
                   recipientDetails: req.recipientDetails,
                   profileFileName: req.receiver?.profilePicture,
                   fallbackLetter: (req.receiver?.fullName ?? "U").trim(),
                   onAccept: canAccept ? () => onAcceptRequest(requestId) : null,
                   onViewDetails: () {
-                    // TODO: open details page
+                    RequestDetailsDialog.show(
+                      context,
+                      request: req,
+                      personName: req.receiver?.fullName ?? "Unknown User",
+                      personProfileFileName: req.receiver?.profilePicture,
+                      distanceText: distanceText,
+                      canAccept: canAccept,
+                      onAcceptRequest: onAcceptRequest,
+                    );
                   },
                 );
               },
@@ -151,5 +191,38 @@ class RequestList extends StatelessWidget {
       'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  double _haversineDistanceKm({
+    required double userLat,
+    required double userLng,
+    required double targetLat,
+    required double targetLng,
+  }) {
+    const earthRadiusKm = 6371.0;
+
+    final dLat = _toRadians(targetLat - userLat);
+    final dLng = _toRadians(targetLng - userLng);
+
+    final lat1 = _toRadians(userLat);
+    final lat2 = _toRadians(targetLat);
+
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1) *
+            math.cos(lat2) *
+            math.sin(dLng / 2) *
+            math.sin(dLng / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    return earthRadiusKm * c;
+  }
+
+  double _toRadians(double degrees) => degrees * (math.pi / 180);
+
+  String _formatDistanceKm(double km) {
+    if (km.isNaN || km.isInfinite) return "—";
+    if (km < 0.1) return "<0.1km";
+    return "${km.toStringAsFixed(1)}km";
   }
 }
