@@ -1,10 +1,13 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
+import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/history/history_card.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/history/history_details.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/request/presentation/pages/edit_request_page.dart';
 import 'package:blood_link/features/request/presentation/pages/ongoing_donation_page.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
+import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -84,6 +87,17 @@ class HistoryList extends ConsumerWidget {
             tabType == HistoryTabType.ongoing &&
             currentUserId != null &&
             req.donorId == currentUserId;
+        final status = (req.requestStatus ?? "").toLowerCase().trim();
+        final canEdit =
+            tabType == HistoryTabType.ongoing &&
+            !isDonatingOngoing &&
+            status != "accepted" &&
+            status != "finished";
+        final canDelete =
+            !isDonatingOngoing &&
+            status != "accepted" &&
+            req.requestId != null &&
+            req.requestId!.isNotEmpty;
 
         final personName = tabType == HistoryTabType.received
             ? (req.donor?.fullName ?? "Unknown User")
@@ -97,6 +111,81 @@ class HistoryList extends ConsumerWidget {
           personName: personName,
           personProfileFileName: profileFile,
           showFinish: isDonatingOngoing,
+          showEdit: canEdit,
+          showDelete: canDelete,
+          onEdit: canEdit
+              ? () async {
+                  final updated = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditRequestPage(request: req),
+                    ),
+                  );
+
+                  if (updated == true) {
+                    await ref
+                        .read(requestViewModelProvider.notifier)
+                        .getMyHistory();
+                  }
+                }
+              : null,
+          onDelete: canDelete
+              ? () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) {
+                      return AlertDialog(
+                        backgroundColor: Colors.white,
+                        title: const Text(
+                          "Delete Request",
+                          style: TextStyle(
+                            fontFamily: "BricolageGrotesque SemiBold",
+                          ),
+                        ),
+                        content: const Text(
+                          "Are you sure you want to delete this request?",
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
+                            child: const Text("Cancel"),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(dialogContext, true),
+                            child: const Text("Delete"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+
+                  if (confirmed != true) return;
+
+                  await ref
+                      .read(requestViewModelProvider.notifier)
+                      .deleteRequest(req.requestId!);
+
+                  if (!context.mounted) return;
+
+                  final nextState = ref.read(requestViewModelProvider);
+                  if (nextState.status == RequestStatus.error) {
+                    SnackbarUtils.showError(
+                      context,
+                      nextState.errorMessage ?? "Failed to delete request.",
+                    );
+                    return;
+                  }
+
+                  SnackbarUtils.showSuccess(
+                    context,
+                    "Request deleted successfully.",
+                  );
+                  await ref
+                      .read(requestViewModelProvider.notifier)
+                      .getMyHistory();
+                }
+              : null,
           onFinish: isDonatingOngoing && req.requestId != null
               ? () async {
                   final confirmed = await showDialog<bool>(

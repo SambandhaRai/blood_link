@@ -9,16 +9,24 @@ class HistoryCard extends StatelessWidget {
     required this.personName,
     this.personProfileFileName,
     required this.showFinish,
+    this.showEdit = false,
+    this.showDelete = false,
     required this.onViewDetails,
     this.onFinish,
+    this.onEdit,
+    this.onDelete,
   });
 
   final RequestEntity request;
   final String personName;
   final String? personProfileFileName;
   final bool showFinish;
+  final bool showEdit;
+  final bool showDelete;
   final VoidCallback onViewDetails;
   final VoidCallback? onFinish;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   Color _conditionColor(String value) {
     switch (value.toLowerCase()) {
@@ -53,8 +61,19 @@ class HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+
+    final cardPadding = compact ? 8.0 : 14.0;
+    final avatarRadius = compact ? 24.0 : 30.0;
+    final avatarSize = compact ? 48.0 : 60.0;
+    final titleFontSize = compact ? 14.0 : 15.0;
+    final smallFontSize = compact ? 11.0 : 12.0;
+    final actionFontSize = compact ? 11.0 : 12.0;
+
     final condition = request.recipientCondition.name;
     final ribbonColor = _conditionColor(condition);
+
     final profileUrl =
         personProfileFileName != null && personProfileFileName!.isNotEmpty
         ? ApiEndpoints.profilePicture(personProfileFileName!)
@@ -64,13 +83,19 @@ class HistoryCard extends StatelessWidget {
     final hospitalName = request.hospital?.name ?? "Unknown Hospital";
     final timeText = _timeAgo(request.updatedAt ?? request.createdAt);
     final requestFor = request.requestFor.name.toUpperCase();
+    final status = showFinish
+        ? "pending"
+        : (request.requestStatus ?? "pending").trim();
+    final statusLabel = status.isEmpty
+        ? "Pending"
+        : "${status[0].toUpperCase()}${status.substring(1)}";
 
     return Card(
       color: Colors.white,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -89,29 +114,29 @@ class HistoryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  radius: 30,
+                  radius: avatarRadius,
                   backgroundColor: Colors.grey.shade100,
                   child: ClipOval(
                     child: profileUrl != null
                         ? Image.network(
                             profileUrl,
-                            width: 60,
-                            height: 60,
+                            width: avatarSize,
+                            height: avatarSize,
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => Icon(
                               Icons.person_outline,
-                              size: 30,
+                              size: compact ? 24 : 30,
                               color: Colors.grey.shade500,
                             ),
                           )
                         : Icon(
                             Icons.person_outline,
-                            size: 30,
+                            size: compact ? 24 : 30,
                             color: Colors.grey.shade500,
                           ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: compact ? 8 : 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,44 +145,48 @@ class HistoryCard extends StatelessWidget {
                         "$personName [$bloodGroup]",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: "BricolageGrotesque Bold",
-                          fontSize: 15,
+                          fontSize: titleFontSize,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "For: $requestFor",
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: smallFontSize,
                           color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        "Status: $statusLabel",
+                        style: TextStyle(
+                          fontSize: smallFontSize,
+                          color: Colors.black87,
+                          fontFamily: "BricolageGrotesque SemiBold",
                         ),
                       ),
                       const SizedBox(height: 6),
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.location_on,
-                            color: Color(0xFFA72636),
-                            size: 16,
+                            color: const Color(0xFFA72636),
+                            size: compact ? 15 : 16,
                           ),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
-                              hospitalName,
-                              maxLines: 1,
+                              timeText.isNotEmpty
+                                  ? "$hospitalName ($timeText)"
+                                  : hospitalName,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12),
+                              style: TextStyle(fontSize: smallFontSize),
                             ),
                           ),
-                          if (timeText.isNotEmpty)
-                            Text(
-                              "($timeText)",
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey,
-                              ),
-                            ),
                         ],
                       ),
                     ],
@@ -165,7 +194,7 @@ class HistoryCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: compact ? 10 : 12),
             const Text(
               "Recipient's Detail:",
               style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
@@ -175,7 +204,10 @@ class HistoryCard extends StatelessWidget {
               request.recipientDetails,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.black87),
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: compact ? 12 : 13,
+              ),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -185,9 +217,12 @@ class HistoryCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               condition[0].toUpperCase() + condition.substring(1),
-              style: const TextStyle(color: Colors.black87),
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: compact ? 12 : 13,
+              ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: compact ? 12 : 14),
             Row(
               children: [
                 if (showFinish) ...[
@@ -195,17 +230,80 @@ class HistoryCard extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onFinish,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7F1D1D),
+                        padding: EdgeInsets.symmetric(
+                          vertical: compact ? 8 : 10,
+                          horizontal: compact ? 6 : 10,
+                        ),
                       ),
-                      child: const Text("Finish"),
+                      child: Text(
+                        "Finish",
+                        style: TextStyle(
+                          fontFamily: "BricolageGrotesque Bold",
+                          fontSize: actionFontSize,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: compact ? 6 : 8),
+                ],
+                if (showEdit) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onEdit,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          vertical: compact ? 8 : 10,
+                          horizontal: compact ? 6 : 10,
+                        ),
+                      ),
+                      child: Text(
+                        "Edit",
+                        style: TextStyle(
+                          fontFamily: "BricolageGrotesque Bold",
+                          fontSize: actionFontSize,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: compact ? 4 : 6),
+                ],
+                if (showDelete) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onDelete,
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          vertical: compact ? 8 : 10,
+                          horizontal: compact ? 6 : 10,
+                        ),
+                      ),
+                      child: Text(
+                        "Delete",
+                        style: TextStyle(
+                          fontFamily: "BricolageGrotesque Bold",
+                          fontSize: actionFontSize,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: compact ? 4 : 6),
                 ],
                 Expanded(
                   child: OutlinedButton(
                     onPressed: onViewDetails,
-                    child: const Text("View Details"),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(
+                        vertical: compact ? 8 : 10,
+                        horizontal: compact ? 6 : 10,
+                      ),
+                    ),
+                    child: Text(
+                      "View Details",
+                      style: TextStyle(
+                        fontFamily: "BricolageGrotesque Bold",
+                        fontSize: actionFontSize,
+                      ),
+                    ),
                   ),
                 ),
               ],
