@@ -39,14 +39,18 @@ class RequestViewmodel extends Notifier<RequestState> {
     return const RequestState();
   }
 
-  Future<void> getAllPendingRequests({String? search}) async {
+  Future<void> getAllPendingRequests({
+    String? search,
+    int page = 1,
+    int size = 10,
+  }) async {
     state = state.copyWith(
       status: RequestStatus.loading,
       resetErrorMessage: true,
     );
 
     final result = await _getAllPendingRequestsUsecase(
-      PendingRequestsParams(search: search),
+      PendingRequestsParams(search: search, page: page, size: size),
     );
 
     result.fold(
@@ -56,10 +60,14 @@ class RequestViewmodel extends Notifier<RequestState> {
           errorMessage: failure.message,
         );
       },
-      (requests) {
+      (data) {
         state = state.copyWith(
           status: RequestStatus.loaded,
-          requests: requests,
+          requests: data.requests,
+          page: data.page,
+          size: data.size,
+          total: data.total,
+          totalPages: data.totalPages,
         );
       },
     );
@@ -164,16 +172,20 @@ class RequestViewmodel extends Notifier<RequestState> {
             .toList();
 
         final myOngoing = _mergeUniqueById(
-          requestedAccepted,
+          _mergeUniqueById(requestedPending, requestedAccepted),
           history.ongoing.donationOngoing,
         );
-        final myFinished = _mergeUniqueById(history.received, history.donated);
 
         state = state.copyWith(
           status: RequestStatus.loaded,
           myPendingRequests: requestedPending,
           myOngoingRequests: myOngoing,
-          myFinishedRequests: myFinished,
+          myReceivedRequests: history.received,
+          myDonatedRequests: history.donated,
+          myFinishedRequests: _mergeUniqueById(
+            history.received,
+            history.donated,
+          ),
         );
       },
     );
@@ -268,6 +280,10 @@ class RequestViewmodel extends Notifier<RequestState> {
         state = state.copyWith(
           status: RequestStatus.loaded,
           requests: data.requests,
+          page: data.page,
+          size: data.size,
+          total: data.total,
+          totalPages: data.totalPages,
         );
       },
     );

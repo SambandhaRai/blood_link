@@ -1,4 +1,5 @@
 import 'package:blood_link/core/services/storage/user_session_service.dart';
+import 'package:blood_link/features/user/presentation/view_model/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +27,9 @@ class _StatusCardState extends ConsumerState<StatusCard> {
     final userSessionService = ref.read(userSessionServiceProvider);
     final bloodGroupName =
         userSessionService.getCurrentUserBloodGroupName() ?? "Unknown";
+
+    final userState = ref.watch(userViewmodelProvider);
+    final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
 
     return Card(
       color: Colors.white,
@@ -57,7 +61,9 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                     width: iconSize,
                     height: iconSize,
                   ),
-                  status: 'Allowed',
+                  status: activeAcceptedRequestId != null
+                      ? "Allowed"
+                      : "Not Allowed",
                   label: 'Donor Status',
                 ),
               ),

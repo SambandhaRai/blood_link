@@ -4,7 +4,7 @@ import 'package:blood_link/features/user/domain/usecases/unlock_donor_active_req
 import 'package:blood_link/features/user/presentation/state/user_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final userViewmodelProvider = NotifierProvider.autoDispose<UserViewmodel, UserState>(
+final userViewmodelProvider = NotifierProvider<UserViewmodel, UserState>(
   UserViewmodel.new,
 );
 
@@ -35,6 +35,7 @@ class UserViewmodel extends Notifier<UserState> {
     );
 
     final result = await _getCurrentUserProfileUsecase();
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -62,6 +63,7 @@ class UserViewmodel extends Notifier<UserState> {
     final result = await _lockDonorActiveRequestUsecase(
       LockDonorActiveRequestParams(userId: userId, requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -93,6 +95,7 @@ class UserViewmodel extends Notifier<UserState> {
     final result = await _unlockDonorActiveRequestUsecase(
       UnlockDonorActiveRequestParams(userId: userId, requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {

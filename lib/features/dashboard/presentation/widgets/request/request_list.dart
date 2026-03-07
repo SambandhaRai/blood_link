@@ -1,5 +1,5 @@
 import 'package:blood_link/app/theme/app_colors.dart';
-import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request/request_card.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:flutter/material.dart';
@@ -114,10 +114,12 @@ class RequestList extends StatelessWidget {
                 final canAccept =
                     isPending && requestId != null && requestId.isNotEmpty;
                 return RequestCard(
-                  bloodGroup: req.recipientBlood!.bloodGroup,
+                  bloodGroup: req.recipientBlood?.bloodGroup ?? "-",
                   requestStatus: req.requestStatus ?? "pending",
-                  hospitalName: req.hospital!.name,
+                  recipientCondition: req.recipientCondition.name,
+                  hospitalName: req.hospital?.name ?? "Unknown Hospital",
                   distance: "—",
+                  recipientDetails: req.recipientDetails,
                   profileFileName: req.receiver?.profilePicture,
                   fallbackLetter: (req.receiver?.fullName ?? "U").trim(),
                   onAccept: canAccept ? () => onAcceptRequest(requestId) : null,
