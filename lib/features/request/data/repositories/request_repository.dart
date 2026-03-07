@@ -70,6 +70,53 @@ class RequestRepository implements IRequestRepository {
   }
 
   @override
+  Future<Either<Failure, RequestEntity>> updateRequest(
+    String requestId,
+    CreateRequestEntity request,
+  ) async {
+    if (!await _networkInfo.isConnected) {
+      return Left(NetworkFailure(message: "No Internet Connection"));
+    }
+
+    try {
+      final payload = CreateRequestApiModel.fromEntity(request);
+      final updated = await _requestRemoteDatasource.updateRequest(
+        requestId,
+        payload,
+      );
+      return Right(updated.toEntity());
+    } on DioException catch (e) {
+      return Left(
+        ApiFailure(
+          message: _dioErrorMessage(e, fallback: "Failed to update request"),
+        ),
+      );
+    } catch (e) {
+      return Left(ApiFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteRequest(String requestId) async {
+    if (!await _networkInfo.isConnected) {
+      return Left(NetworkFailure(message: "No Internet Connection"));
+    }
+
+    try {
+      await _requestRemoteDatasource.deleteRequest(requestId);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(
+        ApiFailure(
+          message: _dioErrorMessage(e, fallback: "Failed to delete request"),
+        ),
+      );
+    } catch (e) {
+      return Left(ApiFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, RequestEntity>> getRequestById(
     String requestId,
   ) async {

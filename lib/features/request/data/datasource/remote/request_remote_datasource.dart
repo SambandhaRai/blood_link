@@ -95,6 +95,32 @@ class RequestRemoteDatasource implements IRequestRemoteDatasource {
   }
 
   @override
+  Future<RequestApiModel> updateRequest(
+    String requestId,
+    CreateRequestApiModel request,
+  ) async {
+    final token = _tokenService.getToken();
+
+    final response = await _apiClient.patch(
+      ApiEndpoints.updateRequest(requestId),
+      data: request.toJson(),
+      options: _authOptions(token),
+    );
+
+    return RequestApiModel.fromJson(response.data["data"]);
+  }
+
+  @override
+  Future<void> deleteRequest(String requestId) async {
+    final token = _tokenService.getToken();
+
+    await _apiClient.delete(
+      ApiEndpoints.deleteRequest(requestId),
+      options: _authOptions(token),
+    );
+  }
+
+  @override
   Future<RequestApiModel> acceptRequest(String requestId) async {
     final token = _tokenService.getToken();
 

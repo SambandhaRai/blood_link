@@ -14,6 +14,11 @@ abstract interface class IRequestRemoteDatasource {
   >
   getAllPendingRequests({int page = 1, int size = 10, String? search});
   Future<RequestApiModel> getRequestById(String requestId);
+  Future<RequestApiModel> updateRequest(
+    String requestId,
+    CreateRequestApiModel request,
+  );
+  Future<void> deleteRequest(String requestId);
   Future<RequestApiModel> acceptRequest(String requestId);
   Future<RequestApiModel> finishRequest(String requestId);
 

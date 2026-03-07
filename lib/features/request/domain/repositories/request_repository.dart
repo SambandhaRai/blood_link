@@ -7,6 +7,11 @@ abstract interface class IRequestRepository {
   Future<Either<Failure, RequestEntity>> createRequest(
     CreateRequestEntity request,
   );
+  Future<Either<Failure, RequestEntity>> updateRequest(
+    String requestId,
+    CreateRequestEntity request,
+  );
+  Future<Either<Failure, void>> deleteRequest(String requestId);
   Future<Either<Failure, RequestEntity>> getRequestById(String requestId);
   Future<
     Either<
