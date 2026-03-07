@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/location/location_service.dart';
+import 'package:blood_link/core/utils/distance_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/request/request_card.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/request/request_details.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
@@ -135,12 +134,12 @@ class RequestList extends ConsumerWidget {
                 final hospitalLocation = req.hospital?.location;
                 final distanceText =
                     savedLocation != null && hospitalLocation != null
-                    ? _formatDistanceKm(
-                        _haversineDistanceKm(
-                          userLat: savedLocation.lat,
-                          userLng: savedLocation.lng,
-                          targetLat: hospitalLocation.latitude,
-                          targetLng: hospitalLocation.longitude,
+                    ? DistanceUtils.formatDistanceKm(
+                        DistanceUtils.haversineDistanceKm(
+                          fromLat: savedLocation.lat,
+                          fromLng: savedLocation.lng,
+                          toLat: hospitalLocation.latitude,
+                          toLng: hospitalLocation.longitude,
                         ),
                       )
                     : "—";
@@ -191,38 +190,5 @@ class RequestList extends ConsumerWidget {
       'December',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
-
-  double _haversineDistanceKm({
-    required double userLat,
-    required double userLng,
-    required double targetLat,
-    required double targetLng,
-  }) {
-    const earthRadiusKm = 6371.0;
-
-    final dLat = _toRadians(targetLat - userLat);
-    final dLng = _toRadians(targetLng - userLng);
-
-    final lat1 = _toRadians(userLat);
-    final lat2 = _toRadians(targetLat);
-
-    final a =
-        math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(lat1) *
-            math.cos(lat2) *
-            math.sin(dLng / 2) *
-            math.sin(dLng / 2);
-    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-
-    return earthRadiusKm * c;
-  }
-
-  double _toRadians(double degrees) => degrees * (math.pi / 180);
-
-  String _formatDistanceKm(double km) {
-    if (km.isNaN || km.isInfinite) return "—";
-    if (km < 0.1) return "<0.1km";
-    return "${km.toStringAsFixed(1)}km";
   }
 }

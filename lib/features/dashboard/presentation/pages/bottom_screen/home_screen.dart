@@ -1,4 +1,4 @@
-import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
+import 'package:blood_link/features/dashboard/presentation/state/bottom_nav_state.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/request/request_list.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
@@ -140,9 +140,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Text(
                       label,
                       style: TextStyle(
-                        fontFamily: 'Bricolage Grotesque',
+                        fontFamily: 'BricolageGrotesque Medium',
                         fontSize: compact ? 15 : 18,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -247,13 +246,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             'assets/icons/donate_blood_icon.svg',
                                         label: "Donate Blood",
                                         onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const RequestScreen(),
-                                            ),
-                                          );
+                                          ref
+                                              .read(
+                                                bottomNavIndexProvider.notifier,
+                                              )
+                                              .setIndex(1);
                                         },
                                       ),
                                     ],
@@ -283,19 +280,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Requests",
-                              style: TextStyle(
-                                fontFamily: 'Bricolage Grotesque',
-                                fontSize: compact ? 18 : 20,
-                                fontWeight: FontWeight.w600,
+                        GestureDetector(
+                          onTap: () {
+                            ref
+                                .read(bottomNavIndexProvider.notifier)
+                                .setIndex(1);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Requests",
+                                style: TextStyle(
+                                  fontFamily: 'BricolageGrotesque SemiBold',
+                                  fontSize: compact ? 18 : 20,
+                                ),
                               ),
-                            ),
-                            const Icon(Icons.arrow_forward_ios, size: 15),
-                          ],
+                              const Icon(Icons.arrow_forward_ios, size: 15),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 10),
                         RequestList(

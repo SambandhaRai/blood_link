@@ -121,14 +121,17 @@ class HistoryCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w700,
+                          fontFamily: "BricolageGrotesque Bold",
                           fontSize: 15,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "For: $requestFor",
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Row(
@@ -165,7 +168,7 @@ class HistoryCard extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               "Recipient's Detail:",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
             ),
             const SizedBox(height: 4),
             Text(
@@ -177,7 +180,7 @@ class HistoryCard extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Condition:",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
             ),
             const SizedBox(height: 4),
             Text(

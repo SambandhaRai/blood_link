@@ -339,7 +339,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Logout',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontFamily: "BricolageGrotesque Bold"),
         ),
         content: const Text('Are you sure you want to logout?'),
         actions: [
@@ -359,7 +359,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Logout',
               style: TextStyle(
                 color: Colors.green,
-                fontWeight: FontWeight.bold,
+                fontFamily: "BricolageGrotesque Bold",
               ),
             ),
           ),

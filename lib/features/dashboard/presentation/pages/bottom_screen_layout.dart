@@ -5,6 +5,7 @@ import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/h
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/home_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/profile_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
+import 'package:blood_link/features/dashboard/presentation/state/bottom_nav_state.dart';
 import 'package:blood_link/features/request/presentation/pages/ongoing_donation_page.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
@@ -19,8 +20,6 @@ class BottomScreenLayout extends ConsumerStatefulWidget {
 }
 
 class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
-  int _selectedIndex = 0;
-
   List<Widget> listBottomScreen = [
     const HomeScreen(),
     const RequestScreen(),
@@ -90,6 +89,7 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(bottomNavIndexProvider);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final compact = screenWidth < 380;
     final avatarSize = compact ? 44.0 : 52.0;
@@ -110,7 +110,7 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
         : null;
 
     return Scaffold(
-      appBar: _selectedIndex == 0
+      appBar: selectedIndex == 0
           ? AppBar(
               automaticallyImplyLeading: false,
               backgroundColor: const Color(0xFFA72636),
@@ -194,7 +194,6 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
                               style: TextStyle(
                                 fontFamily: 'BricolageGrotesque SemiBold',
                                 fontSize: greetingFont,
-                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -216,7 +215,7 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
               ),
             )
           : null,
-      body: listBottomScreen[_selectedIndex],
+      body: listBottomScreen[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -237,11 +236,9 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
             label: "Account",
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          ref.read(bottomNavIndexProvider.notifier).setIndex(index);
         },
       ),
     );

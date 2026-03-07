@@ -171,7 +171,7 @@ class RequestDetailsDialog extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: compact ? 20 : 22,
-                                fontWeight: FontWeight.w700,
+                                fontFamily: "BricolageGrotesque Bold",
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -180,7 +180,7 @@ class RequestDetailsDialog extends StatelessWidget {
                               style: TextStyle(
                                 color: const Color(0xFF667085),
                                 fontSize: compact ? 14 : 16,
-                                fontWeight: FontWeight.w500,
+                                fontFamily: "BricolageGrotesque Medium",
                               ),
                             ),
                             if (receiverId != null &&
@@ -219,7 +219,7 @@ class RequestDetailsDialog extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: compact ? 16 : 17,
-                                  fontWeight: FontWeight.w600,
+                                  fontFamily: "BricolageGrotesque SemiBold",
                                   color: const Color(0xFF344054),
                                 ),
                               ),
@@ -255,7 +255,7 @@ class RequestDetailsDialog extends StatelessWidget {
                   Text(
                     "Recipient's Detail:",
                     style: TextStyle(
-                      fontWeight: FontWeight.w700,
+                      fontFamily: "BricolageGrotesque Bold",
                       fontSize: compact ? 16 : 17,
                     ),
                   ),
@@ -271,7 +271,7 @@ class RequestDetailsDialog extends StatelessWidget {
                   Text(
                     "Condition:",
                     style: TextStyle(
-                      fontWeight: FontWeight.w700,
+                      fontFamily: "BricolageGrotesque Bold",
                       fontSize: compact ? 16 : 17,
                     ),
                   ),
@@ -301,7 +301,7 @@ class RequestDetailsDialog extends StatelessWidget {
                         Text(
                           "Patient Info:",
                           style: TextStyle(
-                            fontWeight: FontWeight.w700,
+                            fontFamily: "BricolageGrotesque Bold",
                             fontSize: compact ? 16 : 17,
                           ),
                         ),
@@ -317,7 +317,7 @@ class RequestDetailsDialog extends StatelessWidget {
                           patientName,
                           style: TextStyle(
                             color: const Color(0xFF1D2939),
-                            fontWeight: FontWeight.w600,
+                            fontFamily: "BricolageGrotesque SemiBold",
                             fontSize: compact ? 14 : 15,
                           ),
                         ),
@@ -333,7 +333,7 @@ class RequestDetailsDialog extends StatelessWidget {
                           patientPhone,
                           style: TextStyle(
                             color: const Color(0xFF1D2939),
-                            fontWeight: FontWeight.w600,
+                            fontFamily: "BricolageGrotesque SemiBold",
                             fontSize: compact ? 14 : 15,
                           ),
                         ),
@@ -349,7 +349,7 @@ class RequestDetailsDialog extends StatelessWidget {
                           patientEmail,
                           style: TextStyle(
                             color: const Color(0xFF1D2939),
-                            fontWeight: FontWeight.w600,
+                            fontFamily: "BricolageGrotesque SemiBold",
                             fontSize: compact ? 14 : 15,
                           ),
                         ),

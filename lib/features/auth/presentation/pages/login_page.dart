@@ -139,7 +139,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   style: TextStyle(
                                     fontFamily: 'BricolageGrotesque SemiBold',
                                     fontSize: compact ? 30 : 40,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 SizedBox(height: compact ? 8 : 10),

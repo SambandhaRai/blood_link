@@ -317,7 +317,7 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
                                   child: Text(
                                     "Page ${requestState.page} / ${requestState.totalPages}",
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
+                                      fontFamily: "BricolageGrotesque SemiBold",
                                     ),
                                   ),
                                 ),

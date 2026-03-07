@@ -30,8 +30,7 @@ class MyOutlinedButton extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontFamily: 'Bricolage Grotesque',
-          fontWeight: FontWeight.w600,
+          fontFamily: 'BricolageGrotesque SemiBold',
           fontSize: 15,
           color: textColor,
         ),

@@ -54,7 +54,7 @@ class SnackbarUtils {
                 message,
                 style: const TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontFamily: "BricolageGrotesque Medium",
                   color: Colors.white,
                 ),
               ),

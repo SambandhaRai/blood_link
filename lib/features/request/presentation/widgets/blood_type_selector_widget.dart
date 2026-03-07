@@ -89,7 +89,6 @@ class _BloodTypeSelectorState extends ConsumerState<BloodTypeSelector> {
                     label,
                     style: TextStyle(
                       fontFamily: "BricolageGrotesque SemiBold",
-                      fontWeight: FontWeight.w700,
                       color: isSelected ? Colors.white : Colors.black,
                     ),
                   ),

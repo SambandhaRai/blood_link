@@ -101,13 +101,13 @@ class RequestCard extends StatelessWidget {
                             ),
                           )
                         : Center(
-                          child: Text(
-                            fallbackLetter.isNotEmpty
-                                ? fallbackLetter[0].toUpperCase()
-                                : "U",
-                            style: TextStyle(fontSize: compact ? 18 : 22),
+                            child: Text(
+                              fallbackLetter.isNotEmpty
+                                  ? fallbackLetter[0].toUpperCase()
+                                  : "U",
+                              style: TextStyle(fontSize: compact ? 18 : 22),
+                            ),
                           ),
-                        ),
                   ),
                 ),
                 SizedBox(width: compact ? 8 : 12),
@@ -120,9 +120,8 @@ class RequestCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontFamily: 'Bricolage Grotesque',
                           fontSize: compact ? 14 : 15,
-                          fontWeight: FontWeight.w600,
+                          fontFamily: "BricolageGrotesque SemiBold",
                         ),
                       ),
                       Text(
@@ -159,7 +158,7 @@ class RequestCard extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Recipient's Detail:",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
             ),
             const SizedBox(height: 4),
             Text(
@@ -171,7 +170,7 @@ class RequestCard extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Condition:",
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
             ),
             const SizedBox(height: 4),
             Text(
