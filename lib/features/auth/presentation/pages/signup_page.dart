@@ -104,13 +104,24 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         return;
       }
 
+      if (_selectedBloodGroup == null || _selectedBloodGroup!.isEmpty) {
+        SnackbarUtils.showError(context, "Please select blood group");
+        return;
+      }
+
+      final selectedDob = _selectedDob!;
+      final dobIso =
+          "${selectedDob.year.toString().padLeft(4, '0')}-"
+          "${selectedDob.month.toString().padLeft(2, '0')}-"
+          "${selectedDob.day.toString().padLeft(2, '0')}";
+
       // ya ko data lai view model ma pass garnu paryo
       ref
           .read(authViewmodelProvider.notifier)
           .register(
             fullName: _fullNameController.text,
             phoneNumber: _phoneController.text.trim(),
-            dob: _dobController.text,
+            dob: dobIso,
             gender: _gender ?? "",
             bloodId: _selectedBloodGroup,
             healthCondition: _healthConditionController.text.trim(),
@@ -373,7 +384,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                     const SizedBox(height: 20),
 
                                     // Gender Drop Down
-                                    DropdownButtonFormField(
+                                    DropdownButtonFormField<String>(
                                       initialValue: _gender,
                                       decoration: InputDecoration(
                                         labelText: "Gender",
@@ -431,7 +442,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                     const SizedBox(height: 20),
 
                                     // Blood Group Drop Down
-                                    DropdownButtonFormField(
+                                    DropdownButtonFormField<String>(
                                       initialValue: _selectedBloodGroup,
                                       decoration: InputDecoration(
                                         labelText: "Blood Group",
@@ -487,6 +498,12 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                         setState(() {
                                           _selectedBloodGroup = value;
                                         });
+                                      },
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please select blood group";
+                                        }
+                                        return null;
                                       },
                                     ),
                                     const SizedBox(height: 20),

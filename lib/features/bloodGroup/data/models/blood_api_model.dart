@@ -16,7 +16,10 @@ class BloodApiModel {
 
   // fromJson
   factory BloodApiModel.fromJson(Map<String, dynamic> json) =>
-      _$BloodApiModelFromJson(json);
+      _$BloodApiModelFromJson({
+        ...json,
+        "_id": json["_id"] ?? json["id"] ?? json["bloodId"],
+      });
 
   // toEntity
   BloodEntity toEntity() {

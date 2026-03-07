@@ -5,6 +5,19 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'auth_api_model.g.dart';
 
+BloodApiModel? _bloodFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is Map<String, dynamic>) {
+    return BloodApiModel.fromJson(value);
+  }
+  if (value is String) {
+    return BloodApiModel(bloodId: value, bloodGroup: "");
+  }
+  return null;
+}
+
+Map<String, dynamic>? _bloodToJson(BloodApiModel? model) => model?.toJson();
+
 @JsonSerializable(explicitToJson: true)
 class AuthApiModel {
   @JsonKey(name: "_id")
@@ -13,6 +26,7 @@ class AuthApiModel {
   final String phoneNumber;
   final String dob;
   final String gender;
+  @JsonKey(fromJson: _bloodFromJson, toJson: _bloodToJson)
   final BloodApiModel? bloodId;
   final String? healthCondition;
   final String email;
@@ -76,15 +90,19 @@ class AuthApiModel {
 
   // fromEntity
   factory AuthApiModel.fromEntity(AuthEntity entity) {
+    final resolvedBlood = entity.bloodGroup != null
+        ? BloodApiModel.fromEntity(entity.bloodGroup!)
+        : (entity.bloodId != null && entity.bloodId!.isNotEmpty
+              ? BloodApiModel(bloodId: entity.bloodId, bloodGroup: "")
+              : null);
+
     return AuthApiModel(
       userId: entity.userId,
       fullName: entity.fullName,
       phoneNumber: entity.phoneNumber,
       dob: entity.dob,
       gender: entity.gender,
-      bloodId: entity.bloodGroup != null
-          ? BloodApiModel.fromEntity(entity.bloodGroup!)
-          : null,
+      bloodId: resolvedBlood,
       healthCondition: entity.healthCondition,
       email: entity.email,
       password: entity.password,
