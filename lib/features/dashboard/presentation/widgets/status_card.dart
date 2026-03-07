@@ -30,6 +30,8 @@ class _StatusCardState extends ConsumerState<StatusCard> {
 
     final userState = ref.watch(userViewmodelProvider);
     final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
+    final hasActiveAcceptedRequest =
+        activeAcceptedRequestId != null && activeAcceptedRequestId.isNotEmpty;
 
     return Card(
       color: Colors.white,
@@ -61,9 +63,7 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                     width: iconSize,
                     height: iconSize,
                   ),
-                  status: activeAcceptedRequestId != null
-                      ? "Allowed"
-                      : "Not Allowed",
+                  status: hasActiveAcceptedRequest ? "Not Allowed" : "Allowed",
                   label: 'Donor Status',
                 ),
               ),

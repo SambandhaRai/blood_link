@@ -174,6 +174,12 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
         elevation: 0,
         toolbarHeight: 80,
         titleSpacing: 0,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+        ),
         title: Text(
           "Requests",
           style: TextStyle(

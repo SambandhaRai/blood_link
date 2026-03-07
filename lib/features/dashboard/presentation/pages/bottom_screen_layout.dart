@@ -1,9 +1,13 @@
 import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
+import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/history_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/home_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/profile_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
+import 'package:blood_link/features/request/presentation/pages/ongoing_donation_page.dart';
+import 'package:blood_link/features/request/presentation/state/request_state.dart';
+import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,6 +27,66 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
     const HistoryScreen(),
     const ProfileScreen(),
   ];
+
+  Future<void> _handleFinishFromShortcut(String requestId) async {
+    await ref.read(requestViewModelProvider.notifier).finishRequest(requestId);
+    if (!mounted) return;
+
+    final state = ref.read(requestViewModelProvider);
+    if (state.status == RequestStatus.error) {
+      final error = state.errorMessage ?? "Failed to finish request.";
+      SnackbarUtils.showError(context, error);
+      return;
+    }
+
+    SnackbarUtils.showSuccess(context, "Request finished successfully.");
+    await ref.read(requestViewModelProvider.notifier).getMyHistory();
+  }
+
+  Future<void> _openOngoingDonationFromAppBar() async {
+    final userSessionService = ref.read(userSessionServiceProvider);
+    final currentUserId = userSessionService.getCurrentUserId();
+
+    if (currentUserId == null || currentUserId.isEmpty) {
+      SnackbarUtils.showWarning(context, "User session not found.");
+      return;
+    }
+
+    await ref.read(requestViewModelProvider.notifier).getMyHistory();
+    if (!mounted) return;
+
+    final requestState = ref.read(requestViewModelProvider);
+    if (requestState.status == RequestStatus.error) {
+      final error = requestState.errorMessage ?? "Failed to load history.";
+      SnackbarUtils.showError(context, error);
+      return;
+    }
+
+    final ongoingDonation = requestState.myOngoingRequests
+        .where((request) => request.donorId == currentUserId)
+        .toList();
+
+    if (ongoingDonation.isEmpty) {
+      SnackbarUtils.showInfo(context, "No ongoing donation found.");
+      return;
+    }
+
+    final request = ongoingDonation.first;
+    final personName = request.receiver?.fullName ?? "Unknown User";
+    final profileFile = request.receiver?.profilePicture;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OngoingDonationPage(
+          request: request,
+          personName: personName,
+          personProfileFileName: profileFile,
+          onFinishRequest: _handleFinishFromShortcut,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,25 +203,13 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
                         ],
                       ),
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            Icons.access_time,
-                            size: iconSize,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.notifications_none,
-                            size: iconSize,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {},
-                        ),
-                      ],
+                    IconButton(
+                      icon: Icon(
+                        Icons.access_time,
+                        size: iconSize,
+                        color: Colors.white,
+                      ),
+                      onPressed: _openOngoingDonationFromAppBar,
                     ),
                   ],
                 ),

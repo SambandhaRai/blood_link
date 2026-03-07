@@ -1,8 +1,9 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
-import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/history/history_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/history/history_details.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/request/presentation/pages/ongoing_donation_page.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,7 +134,38 @@ class HistoryList extends ConsumerWidget {
                 }
               : null,
           onViewDetails: () {
-            SnackbarUtils.showInfo(context, "History details coming soon.");
+            final userIdLabel = tabType == HistoryTabType.received
+                ? "Donor ID"
+                : "Receiver ID";
+            final userIdValue = tabType == HistoryTabType.received
+                ? req.donor?.userId
+                : req.receiver?.userId;
+
+            if (isDonatingOngoing) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OngoingDonationPage(
+                    request: req,
+                    personName: personName,
+                    personProfileFileName: profileFile,
+                    onFinishRequest: onFinishRequest,
+                  ),
+                ),
+              );
+              return;
+            }
+
+            HistoryDetailsDialog.show(
+              context,
+              request: req,
+              personName: personName,
+              personProfileFileName: profileFile,
+              canFinish: isDonatingOngoing,
+              onFinishRequest: onFinishRequest,
+              userIdLabel: userIdLabel,
+              userIdValue: userIdValue,
+            );
           },
         );
       },
