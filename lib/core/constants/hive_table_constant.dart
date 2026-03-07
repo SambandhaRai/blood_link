@@ -9,4 +9,10 @@ class HiveTableConstant {
 
   static const int bloodTypeId = 1;
   static const String bloodTable = "blood_table";
+
+  static const int hospitalTypeId = 2;
+  static const String hospitalTable = "hospital_table";
+
+  static const int requestTypeId = 3;
+  static const String requestTable = "request_table";
 }
