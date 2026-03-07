@@ -5,6 +5,7 @@ abstract interface class IBloodLocalDatasource {
   Future<List<BloodHiveModel>> getAllBloodGroup();
   Future<BloodHiveModel> getBloodById(String bloodId);
   Future<bool> createBloodGroup(BloodHiveModel blood);
+  Future<void> cacheAllBloodGroups(List<BloodHiveModel> bloodGroups);
 }
 
 abstract interface class IBloodRemoteDatasource {

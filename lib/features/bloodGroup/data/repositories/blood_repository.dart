@@ -52,6 +52,15 @@ class BloodRepository implements IBloodRepository {
     if (await _networkInfo.isConnected) {
       try {
         final apiModel = await _bloodRemoteDatasource.getAllBloodGroup();
+        final hiveModels = apiModel
+            .map(
+              (blood) => BloodHiveModel(
+                bloodId: blood.bloodId,
+                bloodGroup: blood.bloodGroup,
+              ),
+            )
+            .toList();
+        await _bloodLocalDatasource.cacheAllBloodGroups(hiveModels);
         final result = BloodApiModel.toEntityList(apiModel);
         return Right(result);
       } on DioException catch (e) {

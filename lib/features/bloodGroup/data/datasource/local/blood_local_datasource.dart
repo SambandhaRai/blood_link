@@ -36,4 +36,9 @@ class BloodLocalDatasource implements IBloodLocalDatasource {
   Future<BloodHiveModel> getBloodById(String bloodId) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> cacheAllBloodGroups(List<BloodHiveModel> bloodGroups) async {
+    await _hiveService.cacheAllBloodGroups(bloodGroups);
+  }
 }
