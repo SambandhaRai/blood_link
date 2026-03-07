@@ -1,10 +1,12 @@
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
-import 'package:blood_link/features/dashboard/presentation/widgets/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request/request_card.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/request/presentation/pages/request_blood_page.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
+import 'package:blood_link/features/user/presentation/state/user_state.dart';
+import 'package:blood_link/features/user/presentation/view_model/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,15 +19,52 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _allPage = 1;
+  static const int _pageSize = 10;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(requestViewModelProvider.notifier).getAllPendingRequests();
+      _loadAllPendingRequests(page: 1);
     });
   }
 
+  Future<void> _loadAllPendingRequests({int? page}) async {
+    final nextPage = page ?? _allPage;
+    _allPage = nextPage;
+    await ref
+        .read(requestViewModelProvider.notifier)
+        .getAllPendingRequests(page: nextPage, size: _pageSize);
+  }
+
   Future<void> _handleAcceptRequest(String requestId) async {
+    await ref.read(userViewmodelProvider.notifier).getCurrentUserProfile();
+    if (!mounted) return;
+
+    final userState = ref.read(userViewmodelProvider);
+    if (userState.status == UserStatus.error) {
+      SnackbarUtils.showError(
+        context,
+        userState.errorMessage ?? "Failed to validate active request.",
+      );
+      return;
+    }
+
+    final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
+    if (activeAcceptedRequestId != null &&
+        activeAcceptedRequestId.isNotEmpty &&
+        activeAcceptedRequestId != requestId) {
+      SnackbarUtils.showWarning(
+        context,
+        "You can accept only one request at a time. Finish your active request first.",
+      );
+      return;
+    }
+
+    final shouldAccept = await _showAcceptConfirmation();
+    if (!shouldAccept || !mounted) return;
+
     await ref.read(requestViewModelProvider.notifier).acceptRequest(requestId);
     if (!mounted) return;
 
@@ -39,7 +78,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     SnackbarUtils.showSuccess(context, "Request accepted successfully.");
-    await ref.read(requestViewModelProvider.notifier).getAllPendingRequests();
+    await _loadAllPendingRequests(page: _allPage);
+  }
+
+  Future<bool> _showAcceptConfirmation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            "Accept Request",
+            style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
+          ),
+          content: const Text("Are you sure you want to accept this request?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("Accept"),
+            ),
+          ],
+        );
+      },
+    );
+
+    return confirmed ?? false;
   }
 
   @override
@@ -250,10 +317,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 requestId.isNotEmpty;
 
                             return RequestCard(
-                              bloodGroup: req.recipientBlood!.bloodGroup,
+                              bloodGroup: req.recipientBlood?.bloodGroup ?? "-",
                               requestStatus: req.requestStatus ?? "pending",
-                              hospitalName: req.hospital!.name,
+                              recipientCondition: req.recipientCondition.name,
+                              hospitalName:
+                                  req.hospital?.name ?? "Unknown Hospital",
                               distance: "—",
+                              recipientDetails: req.recipientDetails,
                               profileFileName: req.receiver?.profilePicture,
                               fallbackLetter: (req.receiver?.fullName ?? "U")
                                   .trim(),
