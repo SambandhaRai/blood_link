@@ -1,8 +1,11 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/api/api_endpoints.dart';
+import 'package:blood_link/core/services/location/location_service.dart';
+import 'package:blood_link/core/utils/distance_utils.dart';
 import 'package:blood_link/features/request/domain/entities/request_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OngoingDonationPage extends ConsumerStatefulWidget {
   const OngoingDonationPage({
@@ -79,6 +82,15 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
     Navigator.pop(context);
   }
 
+  Future<void> callNumber(String phone) async {
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $phone';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final request = widget.request;
@@ -86,6 +98,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
     final bloodGroup = request.recipientBlood?.bloodGroup ?? "-";
     final requestFor = request.requestFor.name.toUpperCase();
     final hospitalName = request.hospital?.name ?? "Unknown Hospital";
+    final hospitalLocation = request.hospital?.location;
     final timeText = _timeAgo(request.updatedAt ?? request.createdAt);
     final patientName =
         request.patientName ?? request.receiver?.fullName ?? "-";
@@ -96,6 +109,17 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
         widget.personProfileFileName != null &&
             widget.personProfileFileName!.isNotEmpty
         ? ApiEndpoints.profilePicture(widget.personProfileFileName!)
+        : null;
+    final savedLocation = ref.read(locationServiceProvider).getSavedLocation();
+    final distanceText = savedLocation != null && hospitalLocation != null
+        ? DistanceUtils.formatDistanceKm(
+            DistanceUtils.haversineDistanceKm(
+              fromLat: savedLocation.lat,
+              fromLng: savedLocation.lng,
+              toLat: hospitalLocation.latitude,
+              toLng: hospitalLocation.longitude,
+            ),
+          )
         : null;
 
     return Scaffold(
@@ -112,7 +136,10 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
         ),
         title: const Text(
           "Current Donation",
-          style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+          style: TextStyle(
+            fontFamily: "BricolageGrotesque Bold",
+            color: Colors.white,
+          ),
         ),
       ),
       body: Column(
@@ -199,7 +226,9 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                                     const SizedBox(width: 5),
                                     Expanded(
                                       child: Text(
-                                        hospitalName,
+                                        distanceText != null
+                                            ? "$distanceText, $hospitalName"
+                                            : hospitalName,
                                         style: const TextStyle(fontSize: 18),
                                       ),
                                     ),
@@ -225,7 +254,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                       const Text(
                         "Recipient's Detail:",
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
+                          fontFamily: "BricolageGrotesque Bold",
                           fontSize: 16,
                         ),
                       ),
@@ -242,7 +271,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                       const Text(
                         "Condition:",
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
+                          fontFamily: "BricolageGrotesque Bold",
                           fontSize: 16,
                         ),
                       ),
@@ -272,7 +301,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                             const Text(
                               "Patient Info:",
                               style: TextStyle(
-                                fontWeight: FontWeight.w700,
+                                fontFamily: "BricolageGrotesque Bold",
                                 fontSize: 16,
                               ),
                             ),
@@ -288,7 +317,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                               patientName,
                               style: const TextStyle(
                                 color: Color(0xFF1D2939),
-                                fontWeight: FontWeight.w600,
+                                fontFamily: "BricolageGrotesque SemiBold",
                                 fontSize: 15,
                               ),
                             ),
@@ -300,12 +329,16 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                                 fontSize: 14,
                               ),
                             ),
-                            Text(
-                              patientPhone,
-                              style: const TextStyle(
-                                color: Color(0xFF1D2939),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
+                            GestureDetector(
+                              onTap: () => callNumber(patientPhone),
+                              child: Text(
+                                patientPhone,
+                                style: const TextStyle(
+                                  color: Color(0xFF1D2939),
+                                  fontFamily: "BricolageGrotesque SemiBold",
+                                  fontSize: 15,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -320,7 +353,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                               patientEmail,
                               style: const TextStyle(
                                 color: Color(0xFF1D2939),
-                                fontWeight: FontWeight.w600,
+                                fontFamily: "BricolageGrotesque SemiBold",
                                 fontSize: 15,
                               ),
                             ),
@@ -352,7 +385,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
                               : const Text(
                                   "Finish",
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w700,
+                                    fontFamily: "BricolageGrotesque Bold",
                                     fontSize: 18,
                                   ),
                                 ),
