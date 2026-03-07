@@ -5,8 +5,8 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // =================== Configuration ===================
-  static const bool isPhysicalDevice = false;
-  static const String _ipAddress = '192.168.101.8';
+  static const bool isPhysicalDevice = true;
+  static const String _ipAddress = '192.168.101.6';
   static const int _port = 5050;
 
   // =================== Base URLs ===================
@@ -60,6 +60,8 @@ class ApiEndpoints {
   static const String getMyRequestHistory = "$request/my/history";
   static const String getMatchedRequests = "$request/matched";
   static String getRequestById(String id) => "$request/$id";
+  static String updateRequest(String id) => "$request/$id";
+  static String deleteRequest(String id) => "$request/$id";
   static String acceptRequest(String id) => "$request/$id/accept";
   static String finishRequest(String id) => "$request/$id/finish";
 

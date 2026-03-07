@@ -1,5 +1,5 @@
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
-import 'package:blood_link/features/dashboard/presentation/widgets/request/request_card.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/request/request_list.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/request/presentation/pages/request_blood_page.dart';
@@ -112,7 +112,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final requestState = ref.watch(requestViewModelProvider);
-    final requests = requestState.requests;
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
@@ -299,40 +298,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        ListView.separated(
+                        RequestList(
+                          requestState: requestState,
+                          onRetry: () =>
+                              _loadAllPendingRequests(page: _allPage),
+                          onAcceptRequest: _handleAcceptRequest,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: requests.take(4).length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final req = requests[index];
-                            final requestId = req.requestId;
-                            final isPending =
-                                (req.requestStatus ?? "").toLowerCase() ==
-                                "pending";
-                            final canAccept =
-                                isPending &&
-                                requestId != null &&
-                                requestId.isNotEmpty;
-
-                            return RequestCard(
-                              bloodGroup: req.recipientBlood?.bloodGroup ?? "-",
-                              requestStatus: req.requestStatus ?? "pending",
-                              recipientCondition: req.recipientCondition.name,
-                              hospitalName:
-                                  req.hospital?.name ?? "Unknown Hospital",
-                              distance: "—",
-                              recipientDetails: req.recipientDetails,
-                              profileFileName: req.receiver?.profilePicture,
-                              fallbackLetter: (req.receiver?.fullName ?? "U")
-                                  .trim(),
-                              onAccept: canAccept
-                                  ? () => _handleAcceptRequest(requestId)
-                                  : null,
-                              onViewDetails: () {},
-                            );
-                          },
+                          maxItems: 4,
                         ),
                       ],
                     ),
