@@ -76,7 +76,9 @@ class HistoryList extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final req = sorted[index];
-        final currentUserId = ref.read(userSessionServiceProvider).getCurrentUserId();
+        final currentUserId = ref
+            .read(userSessionServiceProvider)
+            .getCurrentUserId();
         final isDonatingOngoing =
             tabType == HistoryTabType.ongoing &&
             currentUserId != null &&
@@ -100,13 +102,20 @@ class HistoryList extends ConsumerWidget {
                     context: context,
                     builder: (dialogContext) {
                       return AlertDialog(
-                        title: const Text("Confirm Finish"),
+                        backgroundColor: Colors.white,
+                        title: const Text(
+                          "Confirm Finish",
+                          style: TextStyle(
+                            fontFamily: "BricolageGrotesque SemiBold",
+                          ),
+                        ),
                         content: const Text(
                           "Are you sure you want to mark this request as finished?",
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => Navigator.pop(dialogContext, false),
+                            onPressed: () =>
+                                Navigator.pop(dialogContext, false),
                             child: const Text("Cancel"),
                           ),
                           ElevatedButton(
