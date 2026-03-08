@@ -58,6 +58,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     final result = await _getAllPendingRequestsUsecase(
       PendingRequestsParams(search: search, page: page, size: size),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -108,6 +109,7 @@ class RequestViewmodel extends Notifier<RequestState> {
         patientPhone: requestFor == RequestForType.others ? patientPhone : null,
       ),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -116,12 +118,13 @@ class RequestViewmodel extends Notifier<RequestState> {
           errorMessage: failure.message,
         );
       },
-      (createdRequest) async {
+      (createdRequest) {
+        if (!ref.mounted) return;
         state = state.copyWith(
           status: RequestStatus.created,
           requests: [createdRequest, ...state.requests],
         );
-        await getAllPendingRequests();
+        getAllPendingRequests();
       },
     );
   }
@@ -135,6 +138,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     final result = await _getRequestByIdUsecase(
       GetRequestByIdParams(requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -160,6 +164,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     );
 
     final result = await _getMyHistoryUsecase();
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -206,6 +211,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     final result = await _acceptRequestUsecase(
       AcceptRequestParams(requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -233,6 +239,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     final result = await _finishRequestUsecase(
       FinishRequestParams(requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -282,6 +289,7 @@ class RequestViewmodel extends Notifier<RequestState> {
         patientPhone: requestFor == RequestForType.others ? patientPhone : null,
       ),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -314,6 +322,7 @@ class RequestViewmodel extends Notifier<RequestState> {
     final result = await _deleteRequestUsecase(
       DeleteRequestParams(requestId: requestId),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {
@@ -360,6 +369,7 @@ class RequestViewmodel extends Notifier<RequestState> {
         search: search,
       ),
     );
+    if (!ref.mounted) return;
 
     result.fold(
       (failure) {

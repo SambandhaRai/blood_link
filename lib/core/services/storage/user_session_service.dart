@@ -59,7 +59,7 @@ class UserSessionService {
     if (bloodId != null) {
       await _prefs.setString(_keyUserBloodId, bloodId);
     }
-    if (bloodGroupName != null) {
+    if (bloodGroupName != null && bloodGroupName.trim().isNotEmpty) {
       await _prefs.setString(_keyUserBloodGroupName, bloodGroupName);
     }
     if (profilePicture != null) {
