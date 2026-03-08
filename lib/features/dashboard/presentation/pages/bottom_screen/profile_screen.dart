@@ -6,6 +6,7 @@ import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
+import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -168,6 +169,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final avatarSize = compact ? 104.0 : 130.0;
 
     final userSessionService = ref.watch(userSessionServiceProvider);
+    final authState = ref.watch(authViewmodelProvider);
 
     final userName = userSessionService.getCurrentUserFullName() ?? 'User';
     final userEmail =
@@ -288,40 +290,98 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 520),
-                  child: Card(
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "Manage your account settings and sign out securely.",
-                              style: TextStyle(
-                                fontSize: compact ? 13 : 14,
-                                color: Colors.black87,
-                              ),
+                  child: Column(
+                    children: [
+                      Card(
+                        elevation: 4,
+                        child: SwitchListTile.adaptive(
+                          value: authState.biometricEnabled,
+                          onChanged:
+                              (!authState.biometricAvailable &&
+                                  !authState.biometricEnabled)
+                              ? null
+                              : (value) async {
+                                  await ref
+                                      .read(authViewmodelProvider.notifier)
+                                      .setBiometricEnabled(value);
+
+                                  if (!context.mounted) return;
+                                  final latestState = ref.read(
+                                    authViewmodelProvider,
+                                  );
+                                  if (latestState.status == AuthStatus.error &&
+                                      latestState.errorMessage != null) {
+                                    SnackbarUtils.showError(
+                                      context,
+                                      latestState.errorMessage!,
+                                    );
+                                    return;
+                                  }
+
+                                  SnackbarUtils.showSuccess(
+                                    context,
+                                    value
+                                        ? "Biometric login enabled"
+                                        : "Biometric login disabled",
+                                  );
+                                },
+                          title: const Text(
+                            "Enable biometric login",
+                            style: TextStyle(
+                              fontFamily: "BricolageGrotesque SemiBold",
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          ElevatedButton(
-                            onPressed: () => _showLogoutDialog(context),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.logout, size: compact ? 18 : 20),
-                                const SizedBox(width: 6),
-                                Text(
-                                  "Logout",
-                                  style: TextStyle(fontSize: compact ? 14 : 15),
-                                ),
-                              ],
+                          subtitle: Text(
+                            authState.biometricAvailable
+                                ? "Use fingerprint to login quickly"
+                                : "Biometrics not available on this device",
+                            style: TextStyle(
+                              fontSize: compact ? 12 : 13,
+                              color: Colors.black54,
                             ),
                           ),
-                        ],
+                          activeThumbColor: AppColors.primary,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Card(
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Manage your account settings and sign out securely.",
+                                  style: TextStyle(
+                                    fontSize: compact ? 13 : 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton(
+                                onPressed: () => _showLogoutDialog(context),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.logout, size: compact ? 18 : 20),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "Logout",
+                                      style: TextStyle(
+                                        fontSize: compact ? 14 : 15,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

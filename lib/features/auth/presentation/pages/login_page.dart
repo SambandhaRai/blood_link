@@ -29,6 +29,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   final _formKey = GlobalKey<FormState>();
 
+  Future<void> _handleBiometricLogin() async {
+    final ok = await ref
+        .read(authViewmodelProvider.notifier)
+        .loginWithBiometrics();
+    if (!mounted) return;
+
+    if (ok) {
+      // Keep navigation consistent with your existing listener behavior.
+      AppRoutes.pushAndRemoveUntil(context, BottomScreenLayout());
+      SnackbarUtils.showSuccess(context, "Fingerprint Login SuccessFull");
+    } else {
+      final msg =
+          ref.read(authViewmodelProvider).errorMessage ??
+          "Fingerprint login failed";
+      SnackbarUtils.showError(context, msg);
+    }
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -49,6 +67,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authViewmodelProvider);
+
     ref.listen<AuthState>(authViewmodelProvider, (previous, next) {
       if (next.status == AuthStatus.error && next.errorMessage != null) {
         SnackbarUtils.showError(context, next.errorMessage!);
@@ -274,6 +294,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   onPressed: _handleLogin,
                                   child: const Text("Login"),
                                 ),
+                                if (authState.biometricAvailable &&
+                                    authState.biometricEnabled) ...[
+                                  const SizedBox(height: 10),
+                                  OutlinedButton.icon(
+                                    onPressed: authState.biometricLoading
+                                        ? null
+                                        : _handleBiometricLogin,
+                                    icon: authState.biometricLoading
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(Icons.fingerprint),
+                                    label: Text(
+                                      authState.biometricLoading
+                                          ? "Checking..."
+                                          : "Login with Fingerprint",
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
