@@ -41,7 +41,7 @@ class BiometricService {
     _isAuthenticating = true;
     try {
       final ok = await _auth.authenticate(
-        localizedReason: "Unlock BloodLink with fingerprint",
+        localizedReason: "Unlock BloodLink with biometrics",
         biometricOnly: true,
         persistAcrossBackgrounding: true,
       );
