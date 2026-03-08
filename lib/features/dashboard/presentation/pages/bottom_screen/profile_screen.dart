@@ -6,7 +6,10 @@ import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
+import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/settings/settings_tiles.dart';
+import 'package:blood_link/features/user/presentation/pages/edit_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -160,9 +163,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showComingSoon(String title) {
+    SnackbarUtils.showInfo(context, "$title coming soon");
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final coverHeight = compact ? 200.0 : 250.0;
+    final avatarSize = compact ? 104.0 : 130.0;
+
     final userSessionService = ref.watch(userSessionServiceProvider);
+    final authState = ref.watch(authViewmodelProvider);
 
     final userName = userSessionService.getCurrentUserFullName() ?? 'User';
     final userEmail =
@@ -175,13 +188,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : null;
 
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+        toolbarHeight: 80,
+        titleSpacing: 0,
+        title: Text(
+          "My Profile",
+          style: TextStyle(
+            fontFamily: "BricolageGrotesque SemiBold",
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               Container(
                 width: double.infinity,
-                height: 350,
+                height: coverHeight,
                 decoration: const BoxDecoration(
                   color: AppColors.primary,
                   borderRadius: BorderRadius.only(
@@ -191,17 +219,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      "My Profile",
-                      style: TextStyle(
-                        fontFamily: "BricolageGrotesque SemiBold",
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-
                     // Profile Picture (API only)
                     GestureDetector(
                       onTap: _pickMedia,
@@ -209,8 +226,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         alignment: Alignment.bottomRight,
                         children: [
                           Container(
-                            width: 130,
-                            height: 130,
+                            width: avatarSize,
+                            height: avatarSize,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 4),
@@ -227,7 +244,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   ? Image.network(
                                       profileImageUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
+                                      errorBuilder: (_, error, stackTrace) =>
                                           _initialAvatar(userName),
                                     )
                                   : _initialAvatar(userName),
@@ -237,14 +254,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           // little camera icon
                           Container(
                             margin: const EdgeInsets.only(right: 6, bottom: 6),
-                            padding: const EdgeInsets.all(7),
+                            padding: EdgeInsets.all(compact ? 6 : 7),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.camera_alt,
-                              size: 18,
+                              size: compact ? 16 : 18,
                               color: AppColors.primary,
                             ),
                           ),
@@ -252,43 +269,133 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    SizedBox(height: compact ? 10 : 15),
                     Text(
                       userName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "BricolageGrotesque SemiBold",
-                        fontSize: 25,
+                        fontSize: compact ? 21 : 25,
                         color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       userEmail,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "BricolageGrotesque Light",
-                        fontSize: 14,
+                        fontSize: compact ? 13 : 14,
                         color: Colors.white,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  compact ? 20 : 28,
+                  16,
+                  compact ? 24 : 32,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Column(
+                    children: [
+                      SettingsCard(
+                        children: [
+                          SettingsTile(
+                            icon: Icons.system_update_alt_rounded,
+                            title: "Edit profile",
+                            onTap: () async {
+                              final updated = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const EditProfilePage(),
+                                ),
+                              );
+                              if (updated == true && context.mounted) {
+                                setState(() {});
+                              }
+                            },
+                          ),
+                          const Divider(height: 5),
+                          SettingsSwitchTile(
+                            icon: Icons.lock_rounded,
+                            title: "Enable biometrics",
+                            value: authState.biometricEnabled,
+                            onChanged:
+                                (!authState.biometricAvailable &&
+                                    !authState.biometricEnabled)
+                                ? null
+                                : (value) async {
+                                    await ref
+                                        .read(authViewmodelProvider.notifier)
+                                        .setBiometricEnabled(value);
 
-              const SizedBox(height: 400),
+                                    if (!context.mounted) return;
+                                    final latestState = ref.read(
+                                      authViewmodelProvider,
+                                    );
+                                    if (latestState.status ==
+                                            AuthStatus.error &&
+                                        latestState.errorMessage != null) {
+                                      SnackbarUtils.showError(
+                                        context,
+                                        latestState.errorMessage!,
+                                      );
+                                      return;
+                                    }
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _showLogoutDialog(context),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.logout, size: 20),
-                        SizedBox(width: 6),
-                        Text("Logout", style: TextStyle(fontSize: 15)),
-                      ],
-                    ),
+                                    SnackbarUtils.showSuccess(
+                                      context,
+                                      value
+                                          ? "Biometric login enabled"
+                                          : "Biometric login disabled",
+                                    );
+                                  },
+                          ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.help_outline_rounded,
+                            title: "Help & support",
+                            onTap: () => _showComingSoon("Help & support"),
+                          ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.phone_in_talk_outlined,
+                            title: "Contact us",
+                            onTap: () => _showComingSoon("Contact us"),
+                          ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.privacy_tip_outlined,
+                            title: "Privacy and policy",
+                            onTap: () => _showComingSoon("Privacy policy"),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Card(
+                        elevation: 4,
+                        child: ElevatedButton(
+                          onPressed: () => _showLogoutDialog(context),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.logout, size: compact ? 18 : 20),
+                              const SizedBox(width: 6),
+                              Text(
+                                "Logout",
+                                style: TextStyle(fontSize: compact ? 14 : 15),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ],
           ),
@@ -301,10 +408,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Logout',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontFamily: "BricolageGrotesque Bold"),
         ),
         content: const Text('Are you sure you want to logout?'),
         actions: [
@@ -324,7 +432,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               'Logout',
               style: TextStyle(
                 color: Colors.green,
-                fontWeight: FontWeight.bold,
+                fontFamily: "BricolageGrotesque Bold",
               ),
             ),
           ),

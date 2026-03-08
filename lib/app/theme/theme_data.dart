@@ -27,5 +27,19 @@ ThemeData getApplicationTheme() {
       selectedLabelStyle: TextStyle(fontFamily: "BricolageGrotesque Bold"),
       elevation: 10,
     ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadiusGeometry.circular(12),
+        ),
+        textStyle: TextStyle(
+          fontFamily: 'BricolageGrotesque SemiBold',
+          fontSize: 20,
+          color: Colors.black,
+        ),
+        foregroundColor: Colors.black,
+      ),
+    ),
   );
 }

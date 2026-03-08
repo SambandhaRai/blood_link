@@ -104,13 +104,24 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         return;
       }
 
+      if (_selectedBloodGroup == null || _selectedBloodGroup!.isEmpty) {
+        SnackbarUtils.showError(context, "Please select blood group");
+        return;
+      }
+
+      final selectedDob = _selectedDob!;
+      final dobIso =
+          "${selectedDob.year.toString().padLeft(4, '0')}-"
+          "${selectedDob.month.toString().padLeft(2, '0')}-"
+          "${selectedDob.day.toString().padLeft(2, '0')}";
+
       // ya ko data lai view model ma pass garnu paryo
       ref
           .read(authViewmodelProvider.notifier)
           .register(
             fullName: _fullNameController.text,
             phoneNumber: _phoneController.text.trim(),
-            dob: _dobController.text,
+            dob: dobIso,
             gender: _gender ?? "",
             bloodId: _selectedBloodGroup,
             healthCondition: _healthConditionController.text.trim(),
@@ -131,9 +142,6 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
     final bloodGroupState = ref.watch(bloodGroupViewModelProvider);
 
     // auth state
@@ -154,422 +162,464 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     });
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: screenHeight),
-          child: Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFEC99A4), // top color
-                  Color(0xFFA72636), // bottom color
-                ],
-              ),
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: screenWidth > 600 ? 500 : double.infinity,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = constraints.maxWidth;
+          final compact = screenWidth < 360;
+          final maxContentWidth = screenWidth > 900 ? 560.0 : 500.0;
+
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFEC99A4), Color(0xFFA72636)],
+                  ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
+                child: SafeArea(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxContentWidth),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: compact ? 16 : 30,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: compact ? 20 : 40),
 
-                      // Back arrow and Logo
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: IconButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const LoginPage(),
+                            // Back arrow and Logo
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const LoginPage(),
+                                        ),
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                      size: compact ? 24 : 30,
+                                    ),
                                   ),
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.white,
-                                size: 30,
-                              ),
+                                ),
+                                Image.asset(
+                                  'assets/images/small_logo.png',
+                                  width: compact ? 40 : 50,
+                                  height: compact ? 40 : 50,
+                                ),
+                              ],
                             ),
-                          ),
-                          Image.asset(
-                            'assets/images/small_logo.png',
-                            width: 50,
-                            height: 50,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
+                            SizedBox(height: compact ? 8 : 10),
 
-                      // Container for Signup form
-                      Form(
-                        key: _formKey,
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withAlpha(
-                                  (0.2 * 255).round(),
-                                ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                "Sign Up",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'BricolageGrotesque SemiBold',
-                                  fontSize: 40,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-
-                              RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  text: "Already have an account?",
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontFamily: 'BricolageGrotesque ExtraLight',
-                                    fontSize: 15,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: " Login",
-                                      style: const TextStyle(
-                                        color: Color(0xFFA72636),
-                                        fontFamily:
-                                            "BricolageGrotesque SemiBold",
+                            // Container for Signup form
+                            Form(
+                              key: _formKey,
+                              child: Container(
+                                padding: EdgeInsets.all(compact ? 16 : 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withAlpha(
+                                        (0.2 * 255).round(),
                                       ),
-                                      recognizer: _tapGestureRecognizer
-                                        ..onTap = () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const LoginPage(),
-                                            ),
-                                          );
-                                        },
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
                                     ),
                                   ],
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Full Name Input
-                              MyTextFormField(
-                                controller: _fullNameController,
-                                labelText: "Full Name",
-                                hintText: "Full Name",
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Full name is required";
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Phone Number Input
-                              MyTextFormField(
-                                controller: _phoneController,
-                                labelText: "Phone Number",
-                                hintText: "Enter your phone number",
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "Phone number is required";
-                                  }
-                                  if (value.length < 10 || value.length > 10) {
-                                    return "Enter a valid phone number";
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              InkWell(
-                                onTap: _pickDob,
-                                child: InputDecorator(
-                                  decoration: InputDecoration(
-                                    labelText: "Date of Birth",
-                                    labelStyle: const TextStyle(
-                                      color: Colors.grey,
-                                    ),
-                                    hintText: "DD / MM / YYYY",
-                                    hintStyle: const TextStyle(
-                                      color: Colors.grey,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: Colors.grey,
-                                        width: 1.5,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      "Sign Up",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontFamily:
+                                            'BricolageGrotesque SemiBold',
+                                        fontSize: compact ? 30 : 40,
                                       ),
-                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(
-                                        color: Color(0xFFA72636),
-                                        width: 1.5,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 18,
-                                    ),
-                                    suffixIcon: const Icon(
-                                      Icons.calendar_month,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    _dobController.text.isEmpty
-                                        ? "DD / MM / YYYY"
-                                        : _dobController.text,
-                                    style: TextStyle(
-                                      color: _dobController.text.isEmpty
-                                          ? Colors.grey
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
+                                    const SizedBox(height: 10),
 
-                              // Gender Drop Down
-                              DropdownButtonFormField(
-                                initialValue: _gender,
-                                decoration: InputDecoration(
-                                  labelText: "Gender",
-                                  labelStyle: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                  hintText: "Choose your gender",
-                                  hintStyle: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.grey,
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFA72636),
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 18,
-                                  ),
-                                ),
-                                items: _genders
-                                    .map(
-                                      (String gender) =>
-                                          DropdownMenuItem<String>(
-                                            value: gender,
-                                            child: Text(gender),
+                                    RichText(
+                                      textAlign: TextAlign.center,
+                                      text: TextSpan(
+                                        text: "Already have an account?",
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontFamily:
+                                              'BricolageGrotesque ExtraLight',
+                                          fontSize: 15,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: " Login",
+                                            style: const TextStyle(
+                                              color: Color(0xFFA72636),
+                                              fontFamily:
+                                                  "BricolageGrotesque SemiBold",
+                                            ),
+                                            recognizer: _tapGestureRecognizer
+                                              ..onTap = () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const LoginPage(),
+                                                  ),
+                                                );
+                                              },
                                           ),
-                                    )
-                                    .toList(),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    _gender = newValue;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Blood Group Drop Down
-                              DropdownButtonFormField(
-                                initialValue: _selectedBloodGroup,
-                                decoration: InputDecoration(
-                                  labelText: "Blood Group",
-                                  labelStyle: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                  hintText:
-                                      bloodGroupState.status ==
-                                          BloodGroupStatus.loading
-                                      ? "Loading Blood Group..."
-                                      : "Choose your Blood Group",
-                                  hintStyle: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.grey,
-                                      width: 1.5,
+                                        ],
+                                      ),
                                     ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFFA72636),
-                                      width: 1.5,
+                                    const SizedBox(height: 20),
+
+                                    // Full Name Input
+                                    MyTextFormField(
+                                      controller: _fullNameController,
+                                      labelText: "Full Name",
+                                      hintText: "Full Name",
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Full name is required";
+                                        }
+                                        return null;
+                                      },
                                     ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 18,
-                                  ),
+                                    const SizedBox(height: 20),
+
+                                    // Phone Number Input
+                                    MyTextFormField(
+                                      controller: _phoneController,
+                                      labelText: "Phone Number",
+                                      hintText: "Enter your phone number",
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Phone number is required";
+                                        }
+                                        if (value.length < 10 ||
+                                            value.length > 10) {
+                                          return "Enter a valid phone number";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    InkWell(
+                                      onTap: _pickDob,
+                                      child: InputDecorator(
+                                        decoration: InputDecoration(
+                                          labelText: "Date of Birth",
+                                          labelStyle: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                          hintText: "DD / MM / YYYY",
+                                          hintStyle: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Colors.grey,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                              color: Color(0xFFA72636),
+                                              width: 1.5,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 18,
+                                              ),
+                                          suffixIcon: const Icon(
+                                            Icons.calendar_month,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _dobController.text.isEmpty
+                                              ? "DD / MM / YYYY"
+                                              : _dobController.text,
+                                          style: TextStyle(
+                                            color: _dobController.text.isEmpty
+                                                ? Colors.grey
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Gender Drop Down
+                                    DropdownButtonFormField<String>(
+                                      initialValue: _gender,
+                                      decoration: InputDecoration(
+                                        labelText: "Gender",
+                                        labelStyle: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        hintText: "Choose your gender",
+                                        hintStyle: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Colors.grey,
+                                            width: 1.5,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Color(0xFFA72636),
+                                            width: 1.5,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 18,
+                                            ),
+                                      ),
+                                      items: _genders
+                                          .map(
+                                            (String gender) =>
+                                                DropdownMenuItem<String>(
+                                                  value: gender,
+                                                  child: Text(gender),
+                                                ),
+                                          )
+                                          .toList(),
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          _gender = newValue;
+                                        });
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Blood Group Drop Down
+                                    DropdownButtonFormField<String>(
+                                      initialValue: _selectedBloodGroup,
+                                      decoration: InputDecoration(
+                                        labelText: "Blood Group",
+                                        labelStyle: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        hintText:
+                                            bloodGroupState.status ==
+                                                BloodGroupStatus.loading
+                                            ? "Loading Blood Group..."
+                                            : "Choose your Blood Group",
+                                        hintStyle: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Colors.grey,
+                                            width: 1.5,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Color(0xFFA72636),
+                                            width: 1.5,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 18,
+                                            ),
+                                      ),
+                                      items: bloodGroupState.bloodGroups.map((
+                                        blood,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: blood.bloodId,
+                                          child: Text(blood.bloodGroup),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedBloodGroup = value;
+                                        });
+                                      },
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return "Please select blood group";
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Prevailing Health Condition
+                                    MyMultiLineTextFormField(
+                                      controller: _healthConditionController,
+                                      labelText: "Prevailing Health Conditions",
+                                      hintText: "Type here...",
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Email Input
+                                    MyTextFormField(
+                                      controller: _emailController,
+                                      labelText: "Enter your email",
+                                      hintText: "abc@gmail.com",
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your email';
+                                        }
+                                        if (!RegExp(
+                                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                        ).hasMatch(value)) {
+                                          return 'Please enter a valid email';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Password Input
+                                    MyTextFormField(
+                                      controller: _pwController,
+                                      labelText: "Enter your password",
+                                      hintText: "Password",
+                                      obscureText: _obscurePassword,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          color: Colors.grey,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword =
+                                                !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter a password';
+                                        }
+                                        if (value.length < 6) {
+                                          return 'Password must be at least 6 characters';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Confirm Password
+                                    MyTextFormField(
+                                      controller: _confirmPwController,
+                                      labelText: "Confirm your password",
+                                      hintText: "Re-enter your password",
+                                      obscureText: _obscureConfirmPassword,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscureConfirmPassword
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          color: Colors.grey,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscureConfirmPassword =
+                                                !_obscureConfirmPassword;
+                                          });
+                                        },
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter a password';
+                                        }
+                                        if (value != _pwController.text) {
+                                          return 'Password do not match';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 20),
+
+                                    // Sign Up Button
+                                    ElevatedButton(
+                                      onPressed: _handleSignup,
+                                      child: const Text("Sign Up"),
+                                    ),
+                                    const SizedBox(height: 20),
+                                  ],
                                 ),
-                                items: bloodGroupState.bloodGroups.map((blood) {
-                                  return DropdownMenuItem<String>(
-                                    value: blood.bloodId,
-                                    child: Text(blood.bloodGroup),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedBloodGroup = value;
-                                  });
-                                },
                               ),
-                              const SizedBox(height: 20),
-
-                              // Prevailing Health Condition
-                              MyMultiLineTextFormField(
-                                controller: _healthConditionController,
-                                labelText: "Prevailing Health Conditions",
-                                hintText: "Type here...",
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Email Input
-                              MyTextFormField(
-                                controller: _emailController,
-                                labelText: "Enter your email",
-                                hintText: "abc@gmail.com",
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  if (!RegExp(
-                                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                  ).hasMatch(value)) {
-                                    return 'Please enter a valid email';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Password Input
-                              MyTextFormField(
-                                controller: _pwController,
-                                labelText: "Enter your password",
-                                hintText: "Password",
-                                obscureText: _obscurePassword,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a password';
-                                  }
-                                  if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Confirm Password
-                              MyTextFormField(
-                                controller: _confirmPwController,
-                                labelText: "Confirm your password",
-                                hintText: "Re-enter your password",
-                                obscureText: _obscureConfirmPassword,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscureConfirmPassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscureConfirmPassword =
-                                          !_obscureConfirmPassword;
-                                    });
-                                  },
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a password';
-                                  }
-                                  if (value != _pwController.text) {
-                                    return 'Password do not match';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-
-                              // Sign Up Button
-                              ElevatedButton(
-                                onPressed: _handleSignup,
-                                child: const Text("Sign Up"),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: compact ? 16 : 20),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

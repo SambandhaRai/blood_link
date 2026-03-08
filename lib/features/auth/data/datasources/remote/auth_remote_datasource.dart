@@ -47,7 +47,8 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         fullName: user.fullName,
         phoneNumber: user.phoneNumber,
         gender: user.gender,
-        bloodId: user.bloodId,
+        bloodId: user.bloodId?.bloodId,
+        bloodGroupName: user.bloodId?.bloodGroup,
         dob: user.dob,
         healthCondition: user.healthCondition,
         profilePicture: user.profilePicture,
@@ -80,7 +81,8 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         fullName: user.fullName,
         gender: user.gender,
         dob: user.dob,
-        bloodId: user.bloodId,
+        bloodId: user.bloodId?.bloodId,
+        bloodGroupName: user.bloodId?.bloodGroup,
         phoneNumber: user.phoneNumber,
         healthCondition: user.healthCondition,
         profilePicture: user.profilePicture,
@@ -103,9 +105,23 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
 
   @override
   Future<AuthApiModel> register(AuthApiModel user) async {
+    final payload = <String, dynamic>{
+      "_id": user.userId,
+      "fullName": user.fullName,
+      "phoneNumber": user.phoneNumber,
+      "dob": user.dob,
+      "gender": user.gender,
+      "bloodId": user.bloodId?.bloodId,
+      "healthCondition": user.healthCondition,
+      "email": user.email,
+      "password": user.password,
+      "confirmPassword": user.confirmPassword,
+      "profilePicture": user.profilePicture,
+    }..removeWhere((key, value) => value == null);
+
     final response = await _apiClient.post(
       ApiEndpoints.authRegister,
-      data: user.toJson(),
+      data: payload,
     );
     if (response.data['success'] == true) {
       final data = response.data['data'] as Map<String, dynamic>;
@@ -128,16 +144,34 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
   @override
   Future<AuthApiModel?> updateUserProfile(AuthApiModel user) async {
     final token = _tokenService.getToken();
+    final payload = <String, dynamic>{
+      "_id": user.userId,
+      "fullName": user.fullName,
+      "phoneNumber": user.phoneNumber,
+      "dob": user.dob,
+      "gender": user.gender,
+      "bloodId": user.bloodId?.bloodId,
+      "healthCondition": user.healthCondition,
+      "email": user.email,
+      "password": user.password,
+      "confirmPassword": user.confirmPassword,
+      "profilePicture": user.profilePicture,
+    }..removeWhere((key, value) => value == null);
 
     final response = await _apiClient.put(
       ApiEndpoints.updateUserProfile,
-      data: user.toJson(),
+      data: payload,
       options: Options(headers: {"Authorization": "Bearer $token"}),
     );
 
     if (response.data["success"] == true) {
       final data = response.data["data"] as Map<String, dynamic>;
       final newUserProfile = AuthApiModel.fromJson(data);
+      final resolvedBloodGroupName =
+          (newUserProfile.bloodId?.bloodGroup != null &&
+              newUserProfile.bloodId!.bloodGroup.trim().isNotEmpty)
+          ? newUserProfile.bloodId!.bloodGroup
+          : _userSessionService.getCurrentUserBloodGroupName();
 
       await _userSessionService.saveUserSession(
         userId: newUserProfile.userId!,
@@ -145,7 +179,8 @@ class AuthRemoteDatasource implements IAuthRemoteDatasource {
         fullName: newUserProfile.fullName,
         gender: newUserProfile.gender,
         dob: newUserProfile.dob,
-        bloodId: newUserProfile.bloodId,
+        bloodId: newUserProfile.bloodId?.bloodId,
+        bloodGroupName: resolvedBloodGroupName,
         phoneNumber: newUserProfile.phoneNumber,
         healthCondition: newUserProfile.healthCondition,
         profilePicture: newUserProfile.profilePicture,

@@ -41,6 +41,7 @@ dependencies:
   equatable: ^2.0.7
   dartz: ^0.10.1
   permission_handler: ^12.0.1
+  geolocator: ^14.0.2
 
   # Local Database (Offline Storage)
   hive: ^2.2.3
@@ -69,6 +70,11 @@ dependencies:
   # Media Handling
   image_picker: ^1.2.1
   test_cov_console: ^0.2.2
+  url_launcher: ^6.3.2
+
+  # Sensors
+  local_auth: ^3.0.1
+  shake_plus: ^1.0.0
 
 dev_dependencies:
   flutter_test:

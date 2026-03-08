@@ -4,6 +4,8 @@ import 'package:blood_link/features/auth/domain/usecases/login_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/register_usecase.dart';
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
+import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
+import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +21,17 @@ class MockLoginUsecase extends Mock implements LoginUsecase {}
 class MockGetCurrentUserUsecase extends Mock implements GetCurrentUserUsecase {}
 
 class MockLogoutUsecase extends Mock implements LogoutUsecase {}
+
+class FakeAuthViewmodel extends AuthViewmodel {
+  @override
+  AuthState build() => const AuthState();
+
+  @override
+  Future<void> login({required String email, required String password}) async {}
+
+  @override
+  Future<bool> loginWithBiometrics() async => false;
+}
 
 void main() {
   late MockRegisterUsecase mockRegisterUsecase;
@@ -64,6 +77,7 @@ void main() {
           mockGetCurrentUserUsecase,
         ),
         logoutUsecaseProvider.overrideWithValue(mockLogoutUsecase),
+        authViewmodelProvider.overrideWith(FakeAuthViewmodel.new),
       ],
       child: const MaterialApp(home: LoginPage()),
     );

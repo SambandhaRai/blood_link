@@ -16,12 +16,18 @@ class AuthState extends Equatable {
   final AuthEntity? authEntity;
   final String? uploadProfilePictureName;
   final String? errorMessage;
+  final bool biometricAvailable;
+  final bool biometricEnabled;
+  final bool biometricLoading;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.authEntity,
     this.uploadProfilePictureName,
     this.errorMessage,
+    this.biometricAvailable = false,
+    this.biometricEnabled = false,
+    this.biometricLoading = false,
   });
 
   AuthState copyWith({
@@ -29,13 +35,20 @@ class AuthState extends Equatable {
     AuthEntity? authEntity,
     String? uploadProfilePictureName,
     String? errorMessage,
+    bool clearError = false,
+    bool? biometricAvailable,
+    bool? biometricEnabled,
+    bool? biometricLoading,
   }) {
     return AuthState(
       status: status ?? this.status,
       authEntity: authEntity ?? this.authEntity,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       uploadProfilePictureName:
           uploadProfilePictureName ?? this.uploadProfilePictureName,
+      biometricAvailable: biometricAvailable ?? this.biometricAvailable,
+      biometricEnabled: biometricEnabled ?? this.biometricEnabled,
+      biometricLoading: biometricLoading ?? this.biometricLoading,
     );
   }
 
@@ -45,5 +58,8 @@ class AuthState extends Equatable {
     authEntity,
     uploadProfilePictureName,
     errorMessage,
+    biometricAvailable,
+    biometricEnabled,
+    biometricLoading,
   ];
 }

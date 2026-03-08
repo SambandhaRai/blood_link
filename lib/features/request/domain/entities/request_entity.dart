@@ -1,3 +1,6 @@
+import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
+import 'package:blood_link/features/hospital/domain/entities/hospital_entity.dart';
+import 'package:blood_link/features/user/domain/entities/user_entity.dart';
 import 'package:equatable/equatable.dart';
 
 enum ConditionType { critical, urgent, stable }
@@ -8,14 +11,16 @@ class RequestEntity extends Equatable {
   final String? requestId;
 
   final String recipientBloodId;
-  final String hospitalId;
-  final String? postedBy;
-  final String? donorId;
+  final BloodEntity? recipientBlood;
 
-  final String? bloodGroup;
-  final String? hospitalName;
-  final String? postedByName;
-  final String? postedByProfilePicture;
+  final String hospitalId;
+  final HospitalEntity? hospital;
+
+  final String? postedBy;
+  final UserEntity? receiver;
+
+  final String? donorId;
+  final UserEntity? donor;
 
   final String recipientDetails;
   final ConditionType recipientCondition;
@@ -32,14 +37,16 @@ class RequestEntity extends Equatable {
   const RequestEntity({
     this.requestId,
     required this.recipientBloodId,
-    required this.hospitalId,
-    this.postedBy,
-    this.donorId,
+    required this.recipientBlood,
 
-    this.bloodGroup,
-    this.hospitalName,
-    this.postedByName,
-    this.postedByProfilePicture,
+    required this.hospitalId,
+    required this.hospital,
+
+    this.postedBy,
+    this.receiver,
+
+    this.donorId,
+    this.donor,
 
     required this.recipientDetails,
     required this.recipientCondition,
@@ -58,13 +65,13 @@ class RequestEntity extends Equatable {
   List<Object?> get props => [
     requestId,
     recipientBloodId,
+    recipientBlood,
     hospitalId,
+    hospital,
     postedBy,
+    receiver,
     donorId,
-    bloodGroup,
-    hospitalName,
-    postedByName,
-    postedByProfilePicture,
+    donor,
     recipientDetails,
     recipientCondition,
     requestFor,

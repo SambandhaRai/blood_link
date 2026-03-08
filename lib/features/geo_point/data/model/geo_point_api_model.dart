@@ -18,6 +18,12 @@ class GeoPointApiModel {
 
   Map<String, dynamic> toJson() => _$GeoPointApiModelToJson(this);
 
+  factory GeoPointApiModel.fromEntity(GeoPoint entity) {
+    return GeoPointApiModel(
+      type: "Point",
+      coordinates: [entity.longitude, entity.latitude],
+    );
+  }
   GeoPoint toEntity() {
     return GeoPoint(latitude: coordinates[1], longitude: coordinates[0]);
   }

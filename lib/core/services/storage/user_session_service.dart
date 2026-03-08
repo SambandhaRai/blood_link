@@ -22,6 +22,7 @@ class UserSessionService {
   static const String _keyUserPhoneNumber = 'user_phone_number';
   static const String _keyUserGender = 'user_gender';
   static const String _keyUserBloodId = 'user_blood_id';
+  static const String _keyUserBloodGroupName = 'user_blood_group_name';
   static const String _keyUserDob = 'user_dob';
   static const String _keyUserHealthCondition = 'user_health_condition';
   static const String _keyUserProfilePicture = 'user_profile_picture';
@@ -36,6 +37,7 @@ class UserSessionService {
     required String phoneNumber,
     String? gender,
     String? bloodId,
+    String? bloodGroupName,
     String? dob,
     String? healthCondition,
     String? profilePicture,
@@ -56,6 +58,9 @@ class UserSessionService {
     }
     if (bloodId != null) {
       await _prefs.setString(_keyUserBloodId, bloodId);
+    }
+    if (bloodGroupName != null && bloodGroupName.trim().isNotEmpty) {
+      await _prefs.setString(_keyUserBloodGroupName, bloodGroupName);
     }
     if (profilePicture != null) {
       await _prefs.setString(_keyUserProfilePicture, profilePicture);
@@ -97,6 +102,11 @@ class UserSessionService {
     return _prefs.getString(_keyUserBloodId);
   }
 
+  // Get curretn user blood group name
+  String? getCurrentUserBloodGroupName() {
+    return _prefs.getString(_keyUserBloodGroupName);
+  }
+
   // Get current user dob
   String? getCurrentUserDob() {
     return _prefs.getString(_keyUserDob);
@@ -121,6 +131,7 @@ class UserSessionService {
     await _prefs.remove(_keyUserPhoneNumber);
     await _prefs.remove(_keyUserGender);
     await _prefs.remove(_keyUserBloodId);
+    await _prefs.remove(_keyUserBloodGroupName);
     await _prefs.remove(_keyUserDob);
     await _prefs.remove(_keyUserHealthCondition);
     await _prefs.remove(_keyUserProfilePicture);

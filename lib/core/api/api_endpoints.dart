@@ -5,8 +5,8 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // =================== Configuration ===================
-  static const bool isPhysicalDevice = false;
-  static const String _ipAddress = '192.168.1.1';
+  static const bool isPhysicalDevice = true;
+  static const String _ipAddress = '192.168.101.6';
   static const int _port = 5050;
 
   // =================== Base URLs ===================
@@ -38,6 +38,10 @@ class ApiEndpoints {
   static const String userProfile = '/user/profile';
   static const String uploadProfilePicture = '/user/profile/upload';
   static const String updateUserProfile = '/user/update-profile';
+  static String lockDonorActiveRequest(String userId, String requestId) =>
+      '$user/$userId/lock-active-request/$requestId';
+  static String unlockDonorActiveRequest(String userId, String requestId) =>
+      '$user/$userId/unlock-active-request/$requestId';
 
   // =================== Media Helpers===================
   /// Profile picture URL
@@ -51,6 +55,15 @@ class ApiEndpoints {
 
   // =================== Requests Endpoints ===================
   static const String request = "/request";
+  static const String createRequest = request;
+  static const String getAllPendingRequests = request;
+  static const String getMyRequestHistory = "$request/my/history";
+  static const String getMatchedRequests = "$request/matched";
+  static String getRequestById(String id) => "$request/$id";
+  static String updateRequest(String id) => "$request/$id";
+  static String deleteRequest(String id) => "$request/$id";
+  static String acceptRequest(String id) => "$request/$id/accept";
+  static String finishRequest(String id) => "$request/$id/finish";
 
   // =================== Hospital Endpoints ===================
   static const String hospital = "/hospital";

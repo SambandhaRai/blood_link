@@ -1,6 +1,8 @@
 import 'package:blood_link/core/constants/hive_table_constant.dart';
 import 'package:blood_link/features/auth/data/models/auth_hive_model.dart';
 import 'package:blood_link/features/bloodGroup/data/models/blood_hive_model.dart';
+import 'package:blood_link/features/hospital/data/model/hospital_hive_model.dart';
+import 'package:blood_link/features/request/data/models/request_hive_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,6 +30,12 @@ class HiveService {
     }
     if (!Hive.isAdapterRegistered(HiveTableConstant.bloodTypeId)) {
       Hive.registerAdapter(BloodHiveModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(HiveTableConstant.hospitalTypeId)) {
+      Hive.registerAdapter(HospitalHiveModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(HiveTableConstant.requestTypeId)) {
+      Hive.registerAdapter(RequestHiveModelAdapter());
     }
   }
 
@@ -59,6 +67,8 @@ class HiveService {
   Future<void> _openBoxes() async {
     await Hive.openBox<AuthHiveModel>(HiveTableConstant.userTable);
     await Hive.openBox<BloodHiveModel>(HiveTableConstant.bloodTable);
+    await Hive.openBox<HospitalHiveModel>(HiveTableConstant.hospitalTable);
+    await Hive.openBox<RequestHiveModel>(HiveTableConstant.requestTable);
   }
 
   // Close Boxes
@@ -131,6 +141,14 @@ class HiveService {
     return blood;
   }
 
+  // Cache all blood groups (clear existing and replace with new data)
+  Future<void> cacheAllBloodGroups(List<BloodHiveModel> bloodGroups) async {
+    await _bloodBox.clear();
+    for (final blood in bloodGroups) {
+      await _bloodBox.put(blood.bloodId, blood);
+    }
+  }
+
   // Get All Blood Group
   List<BloodHiveModel> getAllBloodGroup() {
     return _bloodBox.values.toList();
@@ -138,5 +156,140 @@ class HiveService {
 
   BloodHiveModel? getBloodGroupById(String? bloodId) {
     return _bloodBox.get(bloodId);
+  }
+
+  // ====================== Hospital Queries ======================
+  Box<HospitalHiveModel> get _hospitalBox =>
+      Hive.box<HospitalHiveModel>(HiveTableConstant.hospitalTable);
+
+  Future<void> cacheAllHospitals(List<HospitalHiveModel> hospitals) async {
+    await _hospitalBox.clear();
+    for (final hospital in hospitals) {
+      await _hospitalBox.put(hospital.id, hospital);
+    }
+  }
+
+  List<HospitalHiveModel> getAllHospitals() {
+    return _hospitalBox.values.toList();
+  }
+
+  HospitalHiveModel? getHospitalById(String hospitalId) {
+    return _hospitalBox.get(hospitalId);
+  }
+
+  // ====================== Request Queries ======================
+  Box<RequestHiveModel> get _requestBox =>
+      Hive.box<RequestHiveModel>(HiveTableConstant.requestTable);
+
+  Future<void> cachePendingRequests(
+    List<RequestHiveModel> requests, {
+    int? amount,
+  }) async {
+    await _removeRequestsByCacheType(RequestHiveModel.cacheTypePending);
+    final itemsToCache = (amount != null && amount > 0)
+        ? requests.take(amount)
+        : requests;
+    for (final request in itemsToCache) {
+      final model = request.copyWith(
+        cacheType: RequestHiveModel.cacheTypePending,
+      );
+      await _requestBox.put(
+        '${RequestHiveModel.cacheTypePending}_${model.requestId}',
+        model,
+      );
+    }
+  }
+
+  List<RequestHiveModel> getAllRequests({int? amount}) {
+    final requests = _requestBox.values
+        .where((request) => request.cacheType == RequestHiveModel.cacheTypePending)
+        .toList();
+    if (amount == null || amount <= 0) {
+      return requests;
+    }
+    return requests.take(amount).toList();
+  }
+
+  Future<void> cacheHistoryRequests({
+    required List<RequestHiveModel> donated,
+    required List<RequestHiveModel> requestedOngoing,
+    required List<RequestHiveModel> donationOngoing,
+    required List<RequestHiveModel> received,
+    int? amountPerSection,
+  }) async {
+    await _removeRequestsByCacheType(RequestHiveModel.cacheTypeDonated);
+    await _removeRequestsByCacheType(RequestHiveModel.cacheTypeRequestedOngoing);
+    await _removeRequestsByCacheType(RequestHiveModel.cacheTypeDonationOngoing);
+    await _removeRequestsByCacheType(RequestHiveModel.cacheTypeReceived);
+
+    await _cacheRequestsByType(
+      RequestHiveModel.cacheTypeDonated,
+      donated,
+      amountPerSection,
+    );
+    await _cacheRequestsByType(
+      RequestHiveModel.cacheTypeRequestedOngoing,
+      requestedOngoing,
+      amountPerSection,
+    );
+    await _cacheRequestsByType(
+      RequestHiveModel.cacheTypeDonationOngoing,
+      donationOngoing,
+      amountPerSection,
+    );
+    await _cacheRequestsByType(
+      RequestHiveModel.cacheTypeReceived,
+      received,
+      amountPerSection,
+    );
+  }
+
+  ({
+    List<RequestHiveModel> donated,
+    ({
+      List<RequestHiveModel> requestedOngoing,
+      List<RequestHiveModel> donationOngoing,
+    })
+    ongoing,
+    List<RequestHiveModel> received,
+  })
+  getCachedHistoryRequests() {
+    List<RequestHiveModel> byType(String type) {
+      return _requestBox.values.where((request) => request.cacheType == type).toList();
+    }
+
+    return (
+      donated: byType(RequestHiveModel.cacheTypeDonated),
+      ongoing: (
+        requestedOngoing: byType(RequestHiveModel.cacheTypeRequestedOngoing),
+        donationOngoing: byType(RequestHiveModel.cacheTypeDonationOngoing),
+      ),
+      received: byType(RequestHiveModel.cacheTypeReceived),
+    );
+  }
+
+  Future<void> _cacheRequestsByType(
+    String cacheType,
+    List<RequestHiveModel> requests,
+    int? amount,
+  ) async {
+    final items = (amount != null && amount > 0) ? requests.take(amount) : requests;
+    for (final request in items) {
+      final model = request.copyWith(cacheType: cacheType);
+      await _requestBox.put('${cacheType}_${model.requestId}', model);
+    }
+  }
+
+  Future<void> _removeRequestsByCacheType(String cacheType) async {
+    final keys = _requestBox.keys.where((key) {
+      final model = _requestBox.get(key);
+      return model?.cacheType == cacheType;
+    }).toList();
+    await _requestBox.deleteAll(keys);
+  }
+
+  // Backward-compatible alias
+  List<RequestHiveModel> getCachedPendingRequests() {
+    return getAllRequests();
   }
 }

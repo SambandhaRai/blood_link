@@ -1,9 +1,14 @@
 import 'package:blood_link/core/api/api_endpoints.dart';
 import 'package:blood_link/core/services/storage/user_session_service.dart';
+import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/history_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/home_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/profile_screen.dart';
 import 'package:blood_link/features/dashboard/presentation/pages/bottom_screen/request_screen.dart';
+import 'package:blood_link/features/dashboard/presentation/state/bottom_nav_state.dart';
+import 'package:blood_link/features/request/presentation/pages/ongoing_donation_page.dart';
+import 'package:blood_link/features/request/presentation/state/request_state.dart';
+import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,8 +20,6 @@ class BottomScreenLayout extends ConsumerStatefulWidget {
 }
 
 class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
-  int _selectedIndex = 0;
-
   List<Widget> listBottomScreen = [
     const HomeScreen(),
     const RequestScreen(),
@@ -24,8 +27,80 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
     const ProfileScreen(),
   ];
 
+  Future<void> _handleFinishFromShortcut(String requestId) async {
+    await ref.read(requestViewModelProvider.notifier).finishRequest(requestId);
+    if (!mounted) return;
+
+    final state = ref.read(requestViewModelProvider);
+    if (state.status == RequestStatus.error) {
+      final error = state.errorMessage ?? "Failed to finish request.";
+      SnackbarUtils.showError(context, error);
+      return;
+    }
+
+    SnackbarUtils.showSuccess(context, "Request finished successfully.");
+    await ref.read(requestViewModelProvider.notifier).getMyHistory();
+  }
+
+  Future<void> _openOngoingDonationFromAppBar() async {
+    final userSessionService = ref.read(userSessionServiceProvider);
+    final currentUserId = userSessionService.getCurrentUserId();
+
+    if (currentUserId == null || currentUserId.isEmpty) {
+      SnackbarUtils.showWarning(context, "User session not found.");
+      return;
+    }
+
+    await ref.read(requestViewModelProvider.notifier).getMyHistory();
+    if (!mounted) return;
+
+    final requestState = ref.read(requestViewModelProvider);
+    if (requestState.status == RequestStatus.error) {
+      final error = requestState.errorMessage ?? "Failed to load history.";
+      SnackbarUtils.showError(context, error);
+      return;
+    }
+
+    final ongoingDonation = requestState.myOngoingRequests
+        .where((request) => request.donorId == currentUserId)
+        .toList();
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) {
+          if (ongoingDonation.isEmpty) {
+            return OngoingDonationPage(
+              personName: "User",
+              onFinishRequest: _handleFinishFromShortcut,
+            );
+          }
+
+          final request = ongoingDonation.first;
+          final personName = request.receiver?.fullName ?? "Unknown User";
+          final profileFile = request.receiver?.profilePicture;
+
+          return OngoingDonationPage(
+            request: request,
+            personName: personName,
+            personProfileFileName: profileFile,
+            onFinishRequest: _handleFinishFromShortcut,
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(bottomNavIndexProvider);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final avatarSize = compact ? 44.0 : 52.0;
+    final avatarInnerSize = compact ? 40.0 : 48.0;
+    final iconSize = compact ? 28.0 : 36.0;
+    final greetingFont = compact ? 20.0 : 25.0;
+
     final userSessionService = ref.watch(userSessionServiceProvider);
 
     final userName = userSessionService
@@ -39,7 +114,7 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
         : null;
 
     return Scaffold(
-      appBar: _selectedIndex == 0
+      appBar: selectedIndex == 0
           ? AppBar(
               automaticallyImplyLeading: false,
               backgroundColor: const Color(0xFFA72636),
@@ -51,103 +126,100 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                width: avatarSize,
+                                height: avatarSize,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
                                 ),
-                              ),
-                              child: CircleAvatar(
-                                radius: 24,
-                                backgroundColor: Colors.white,
-                                child: ClipOval(
-                                  child: (profileImageUrl != null)
-                                      ? Image.network(
-                                          profileImageUrl,
-                                          width: 48,
-                                          height: 48,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Center(
+                                child: CircleAvatar(
+                                  radius: avatarInnerSize / 2,
+                                  backgroundColor: Colors.white,
+                                  child: ClipOval(
+                                    child: (profileImageUrl != null)
+                                        ? Image.network(
+                                            profileImageUrl,
+                                            width: avatarInnerSize,
+                                            height: avatarInnerSize,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (_, error, stackTrace) =>
+                                                    Center(
+                                                      child: Text(
+                                                        userName.isNotEmpty
+                                                            ? userName[0]
+                                                                  .toUpperCase()
+                                                            : "U",
+                                                        style: TextStyle(
+                                                          fontSize: compact
+                                                              ? 18
+                                                              : 24,
+                                                        ),
+                                                      ),
+                                                    ),
+                                          )
+                                        : Center(
                                             child: Text(
                                               userName.isNotEmpty
                                                   ? userName[0].toUpperCase()
                                                   : "U",
-                                              style: const TextStyle(
-                                                fontSize: 24,
+                                              style: TextStyle(
+                                                fontSize: compact ? 18 : 24,
                                               ),
                                             ),
                                           ),
-                                        )
-                                      : Center(
-                                          child: Text(
-                                            userName.isNotEmpty
-                                                ? userName[0].toUpperCase()
-                                                : "U",
-                                            style: const TextStyle(
-                                              fontSize: 24,
-                                            ),
-                                          ),
-                                        ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Icon(
-                                Icons.check_circle,
-                                color: Colors.lightGreenAccent,
-                                size: 16,
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.lightGreenAccent,
+                                  size: 16,
+                                ),
                               ),
+                            ],
+                          ),
+                          SizedBox(width: compact ? 6 : 10),
+                          Expanded(
+                            child: Text(
+                              "Hi, $userName",
+                              style: TextStyle(
+                                fontFamily: 'BricolageGrotesque SemiBold',
+                                fontSize: greetingFont,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "Hi, $userName",
-                          style: TextStyle(
-                            fontFamily: 'BricolageGrotesque SemiBold',
-                            fontSize: 25,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.access_time,
-                            size: 36,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.notifications_none,
-                            size: 36,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {},
-                        ),
-                      ],
+                    IconButton(
+                      icon: Icon(
+                        Icons.access_time,
+                        size: iconSize,
+                        color: Colors.white,
+                      ),
+                      onPressed: _openOngoingDonationFromAppBar,
                     ),
                   ],
                 ),
               ),
             )
           : null,
-      body: listBottomScreen[_selectedIndex],
+      body: listBottomScreen[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
@@ -168,11 +240,9 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
             label: "Account",
           ),
         ],
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex,
         onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          ref.read(bottomNavIndexProvider.notifier).setIndex(index);
         },
       ),
     );

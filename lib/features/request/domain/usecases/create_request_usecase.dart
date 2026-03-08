@@ -1,7 +1,9 @@
 import 'package:blood_link/core/error/failures.dart';
 import 'package:blood_link/core/usecases/app_usecase.dart';
 import 'package:blood_link/features/request/data/repositories/request_repository.dart';
-import 'package:blood_link/features/request/domain/entities/request_entity.dart';
+import 'package:blood_link/features/request/domain/entities/create_request_entity.dart';
+import 'package:blood_link/features/request/domain/entities/request_entity.dart'
+    hide RequestForType, ConditionType;
 import 'package:blood_link/features/request/domain/repositories/request_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
@@ -49,20 +51,19 @@ final createRequestUsecaseProvider = Provider<CreateRequestUsecase>((ref) {
 });
 
 class CreateRequestUsecase
-    implements UsecaseWithParams<bool, CreateRequestParams> {
+    implements UsecaseWithParams<RequestEntity, CreateRequestParams> {
   final IRequestRepository _requestRepository;
 
   CreateRequestUsecase({required IRequestRepository requestRepository})
     : _requestRepository = requestRepository;
 
   @override
-  Future<Either<Failure, bool>> call(CreateRequestParams param) {
-    final requestEntity = RequestEntity(
+  Future<Either<Failure, RequestEntity>> call(CreateRequestParams param) {
+    final entity = CreateRequestEntity(
       recipientBloodId: param.recipientBloodId,
+      hospitalId: param.hospitalId,
       recipientDetails: param.recipientDetails,
       recipientCondition: param.recipientCondition,
-      hospitalId: param.hospitalId,
-
       requestFor: param.requestFor,
       relationToPatient: param.requestFor == RequestForType.others
           ? param.relationToPatient
@@ -75,6 +76,6 @@ class CreateRequestUsecase
           : null,
     );
 
-    return _requestRepository.createRequest(requestEntity);
+    return _requestRepository.createRequest(entity);
   }
 }

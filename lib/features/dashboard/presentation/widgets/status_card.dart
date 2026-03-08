@@ -1,6 +1,5 @@
 import 'package:blood_link/core/services/storage/user_session_service.dart';
-import 'package:blood_link/features/bloodGroup/domain/entities/blood_entity.dart';
-import 'package:blood_link/features/bloodGroup/presentation/view_model/blood_group_viewmodel.dart';
+import 'package:blood_link/features/user/presentation/view_model/user_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,38 +16,40 @@ class _StatusCardState extends ConsumerState<StatusCard> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(bloodGroupViewModelProvider.notifier).getAllBloodGroups();
-    });
-  }
-
-  String _getBloodGroupNameById(
-    String? bloodId,
-    List<BloodEntity> bloodGroups,
-  ) {
-    if (bloodId == null) return 'Unknown';
-    try {
-      return bloodGroups.firstWhere((c) => c.bloodId == bloodId).bloodGroup;
-    } catch (e) {
-      return 'Unknown';
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userSessionService = ref.read(userSessionServiceProvider);
-    final userBloodId = userSessionService.getCurrentUserBloodId();
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cardHeight = screenWidth < 360 ? 84.0 : 96.0;
+    final iconSize = screenWidth < 360 ? 40.0 : 50.0;
 
-    final bloodState = ref.watch(bloodGroupViewModelProvider);
+    final userState = ref.watch(userViewmodelProvider);
+    final userSessionService = ref.read(userSessionServiceProvider);
+    final sessionBloodGroupName = userSessionService
+        .getCurrentUserBloodGroupName()
+        ?.trim();
+    final apiBloodGroupName = userState.user?.bloodGroup?.bloodGroup.trim();
+
+    final bloodGroupName =
+        (sessionBloodGroupName != null && sessionBloodGroupName.isNotEmpty)
+        ? sessionBloodGroupName
+        : (apiBloodGroupName != null && apiBloodGroupName.isNotEmpty)
+        ? apiBloodGroupName
+        : "Unknown";
+
+    final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
+    final hasActiveAcceptedRequest =
+        activeAcceptedRequestId != null && activeAcceptedRequestId.isNotEmpty;
 
     return Card(
       color: Colors.white,
       elevation: 10,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: SizedBox(
-        height: 90,
+        height: cardHeight,
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -57,13 +58,10 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                 child: StatusItem(
                   icon: SvgPicture.asset(
                     'assets/icons/blood_group_icon.svg',
-                    width: 50,
-                    height: 50,
+                    width: iconSize,
+                    height: iconSize,
                   ),
-                  status: _getBloodGroupNameById(
-                    userBloodId,
-                    bloodState.bloodGroups,
-                  ),
+                  status: bloodGroupName,
                   label: 'Blood Group',
                 ),
               ),
@@ -71,10 +69,10 @@ class _StatusCardState extends ConsumerState<StatusCard> {
                 child: StatusItem(
                   icon: SvgPicture.asset(
                     'assets/icons/donor_status_icon.svg',
-                    width: 50,
-                    height: 50,
+                    width: iconSize,
+                    height: iconSize,
                   ),
-                  status: 'Allowed',
+                  status: hasActiveAcceptedRequest ? "Not Allowed" : "Allowed",
                   label: 'Donor Status',
                 ),
               ),
