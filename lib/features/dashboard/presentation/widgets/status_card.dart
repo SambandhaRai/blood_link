@@ -24,11 +24,20 @@ class _StatusCardState extends ConsumerState<StatusCard> {
     final cardHeight = screenWidth < 360 ? 84.0 : 96.0;
     final iconSize = screenWidth < 360 ? 40.0 : 50.0;
 
-    final userSessionService = ref.read(userSessionServiceProvider);
-    final bloodGroupName =
-        userSessionService.getCurrentUserBloodGroupName() ?? "Unknown";
-
     final userState = ref.watch(userViewmodelProvider);
+    final userSessionService = ref.read(userSessionServiceProvider);
+    final sessionBloodGroupName = userSessionService
+        .getCurrentUserBloodGroupName()
+        ?.trim();
+    final apiBloodGroupName = userState.user?.bloodGroup?.bloodGroup.trim();
+
+    final bloodGroupName =
+        (sessionBloodGroupName != null && sessionBloodGroupName.isNotEmpty)
+        ? sessionBloodGroupName
+        : (apiBloodGroupName != null && apiBloodGroupName.isNotEmpty)
+        ? apiBloodGroupName
+        : "Unknown";
+
     final activeAcceptedRequestId = userState.user?.activeAcceptedRequestId;
     final hasActiveAcceptedRequest =
         activeAcceptedRequestId != null && activeAcceptedRequestId.isNotEmpty;

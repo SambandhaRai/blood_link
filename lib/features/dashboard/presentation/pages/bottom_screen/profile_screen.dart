@@ -8,6 +8,8 @@ import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/auth/presentation/pages/login_page.dart';
 import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:blood_link/features/auth/presentation/view_model/auth_viewmodel.dart';
+import 'package:blood_link/features/dashboard/presentation/widgets/settings/settings_tiles.dart';
+import 'package:blood_link/features/user/presentation/pages/edit_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -161,6 +163,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _showComingSoon(String title) {
+    SnackbarUtils.showInfo(context, "$title coming soon");
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -292,90 +298,92 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   constraints: const BoxConstraints(maxWidth: 520),
                   child: Column(
                     children: [
-                      Card(
-                        elevation: 4,
-                        child: SwitchListTile.adaptive(
-                          value: authState.biometricEnabled,
-                          onChanged:
-                              (!authState.biometricAvailable &&
-                                  !authState.biometricEnabled)
-                              ? null
-                              : (value) async {
-                                  await ref
-                                      .read(authViewmodelProvider.notifier)
-                                      .setBiometricEnabled(value);
+                      SettingsCard(
+                        children: [
+                          SettingsTile(
+                            icon: Icons.system_update_alt_rounded,
+                            title: "Edit profile",
+                            onTap: () async {
+                              final updated = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const EditProfilePage(),
+                                ),
+                              );
+                              if (updated == true && context.mounted) {
+                                setState(() {});
+                              }
+                            },
+                          ),
+                          const Divider(height: 5),
+                          SettingsSwitchTile(
+                            icon: Icons.lock_rounded,
+                            title: "Enable biometrics",
+                            value: authState.biometricEnabled,
+                            onChanged:
+                                (!authState.biometricAvailable &&
+                                    !authState.biometricEnabled)
+                                ? null
+                                : (value) async {
+                                    await ref
+                                        .read(authViewmodelProvider.notifier)
+                                        .setBiometricEnabled(value);
 
-                                  if (!context.mounted) return;
-                                  final latestState = ref.read(
-                                    authViewmodelProvider,
-                                  );
-                                  if (latestState.status == AuthStatus.error &&
-                                      latestState.errorMessage != null) {
-                                    SnackbarUtils.showError(
-                                      context,
-                                      latestState.errorMessage!,
+                                    if (!context.mounted) return;
+                                    final latestState = ref.read(
+                                      authViewmodelProvider,
                                     );
-                                    return;
-                                  }
+                                    if (latestState.status ==
+                                            AuthStatus.error &&
+                                        latestState.errorMessage != null) {
+                                      SnackbarUtils.showError(
+                                        context,
+                                        latestState.errorMessage!,
+                                      );
+                                      return;
+                                    }
 
-                                  SnackbarUtils.showSuccess(
-                                    context,
-                                    value
-                                        ? "Biometric login enabled"
-                                        : "Biometric login disabled",
-                                  );
-                                },
-                          title: const Text(
-                            "Enable biometric login",
-                            style: TextStyle(
-                              fontFamily: "BricolageGrotesque SemiBold",
-                            ),
+                                    SnackbarUtils.showSuccess(
+                                      context,
+                                      value
+                                          ? "Biometric login enabled"
+                                          : "Biometric login disabled",
+                                    );
+                                  },
                           ),
-                          subtitle: Text(
-                            authState.biometricAvailable
-                                ? "Use fingerprint to login quickly"
-                                : "Biometrics not available on this device",
-                            style: TextStyle(
-                              fontSize: compact ? 12 : 13,
-                              color: Colors.black54,
-                            ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.help_outline_rounded,
+                            title: "Help & support",
+                            onTap: () => _showComingSoon("Help & support"),
                           ),
-                          activeThumbColor: AppColors.primary,
-                        ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.phone_in_talk_outlined,
+                            title: "Contact us",
+                            onTap: () => _showComingSoon("Contact us"),
+                          ),
+                          const Divider(height: 5),
+                          SettingsTile(
+                            icon: Icons.privacy_tip_outlined,
+                            title: "Privacy and policy",
+                            onTap: () => _showComingSoon("Privacy policy"),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Card(
                         elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
+                        child: ElevatedButton(
+                          onPressed: () => _showLogoutDialog(context),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  "Manage your account settings and sign out securely.",
-                                  style: TextStyle(
-                                    fontSize: compact ? 13 : 14,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              ElevatedButton(
-                                onPressed: () => _showLogoutDialog(context),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.logout, size: compact ? 18 : 20),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      "Logout",
-                                      style: TextStyle(
-                                        fontSize: compact ? 14 : 15,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              Icon(Icons.logout, size: compact ? 18 : 20),
+                              const SizedBox(width: 6),
+                              Text(
+                                "Logout",
+                                style: TextStyle(fontSize: compact ? 14 : 15),
                               ),
                             ],
                           ),

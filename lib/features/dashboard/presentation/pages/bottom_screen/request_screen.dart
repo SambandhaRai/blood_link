@@ -1,8 +1,12 @@
 import 'package:blood_link/app/theme/app_colors.dart';
 import 'package:blood_link/core/services/location/location_service.dart';
+import 'package:blood_link/core/services/sensors/shake/shake_service.dart';
+import 'package:blood_link/core/services/storage/user_session_service.dart';
 import 'package:blood_link/core/utils/snackbar_utils.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/request/request_list.dart';
 import 'package:blood_link/features/dashboard/presentation/widgets/status_card.dart';
+import 'package:blood_link/features/hospital/presentation/view_model/hospital_viewmodel.dart';
+import 'package:blood_link/features/request/domain/entities/create_request_entity.dart';
 import 'package:blood_link/features/request/presentation/state/request_state.dart';
 import 'package:blood_link/features/request/presentation/view_model/request_viewmodel.dart';
 import 'package:blood_link/features/user/presentation/state/user_state.dart';
@@ -18,33 +22,156 @@ class RequestScreen extends ConsumerStatefulWidget {
 }
 
 class _RequestScreenState extends ConsumerState<RequestScreen> {
+  late final ShakeService _shakeService;
   double? _lat;
   double? _lng;
   int _currentTabIndex = 0;
   int _matchedPage = 1;
   int _allPage = 1;
   static const int _pageSize = 10;
+  bool _shakeDialogOpen = false;
+  DateTime? _lastShakeAt;
 
   @override
   void initState() {
     super.initState();
+    _shakeService = ref.read(shakeServiceProvider);
+
     Future.microtask(() {
+      ref.read(hospitalViewModelProvider.notifier).getAllHospitals();
       _loadMatchedRequests();
+      _shakeService.startListening(onShake: _onPhoneShake);
     });
+  }
+
+  @override
+  void dispose() {
+    _shakeService.stopListening();
+    super.dispose();
+  }
+
+  Future<void> _onPhoneShake() async {
+    if (!mounted || _shakeDialogOpen) return;
+
+    final now = DateTime.now();
+    if (_lastShakeAt != null &&
+        now.difference(_lastShakeAt!) < const Duration(seconds: 4)) {
+      return;
+    }
+    _lastShakeAt = now;
+    _shakeDialogOpen = true;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            "Post Emergency Request",
+            style: TextStyle(fontFamily: "BricolageGrotesque SemiBold"),
+          ),
+          content: const Text(
+            "Phone shake detected. Do you want to post a blood request for yourself now?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text("Post Request"),
+            ),
+          ],
+        );
+      },
+    );
+
+    _shakeDialogOpen = false;
+    if (confirmed != true || !mounted) return;
+    await _postSelfRequestFromShake();
+  }
+
+  Future<void> _postSelfRequestFromShake() async {
+    final session = ref.read(userSessionServiceProvider);
+    final bloodId = session.getCurrentUserBloodId();
+    final fullName = session.getCurrentUserFullName() ?? "User";
+    final phone = session.getCurrentUserPhoneNumber() ?? "N/A";
+
+    if (bloodId == null || bloodId.isEmpty) {
+      SnackbarUtils.showError(
+        context,
+        "Your blood group is missing. Please update profile first.",
+      );
+      return;
+    }
+
+    String? hospitalId = _getFirstActiveHospitalId();
+    if (hospitalId == null) {
+      await ref.read(hospitalViewModelProvider.notifier).getAllHospitals();
+      if (!mounted) return;
+      hospitalId = _getFirstActiveHospitalId();
+    }
+
+    if (hospitalId == null) {
+      SnackbarUtils.showError(
+        context,
+        "No active hospital found. Please add hospitals first.",
+      );
+      return;
+    }
+
+    final recipientDetails =
+        "Emergency self request by $fullName. Contact: $phone.";
+
+    await ref
+        .read(requestViewModelProvider.notifier)
+        .createRequests(
+          recipientBloodId: bloodId,
+          recipientDetails: recipientDetails,
+          recipientCondition: ConditionType.critical,
+          hospitalId: hospitalId,
+          requestFor: RequestForType.self,
+        );
+
+    if (!mounted) return;
+    final reqState = ref.read(requestViewModelProvider);
+    if (reqState.status == RequestStatus.error) {
+      SnackbarUtils.showError(
+        context,
+        reqState.errorMessage ?? "Failed to post emergency request.",
+      );
+      return;
+    }
+
+    SnackbarUtils.showSuccess(
+      context,
+      "Emergency request posted successfully.",
+    );
+    await _loadMatchedRequests(page: 1);
+  }
+
+  String? _getFirstActiveHospitalId() {
+    final hospitals = ref.read(hospitalViewModelProvider).hospitals;
+    for (final hospital in hospitals) {
+      if (hospital.isActive) return hospital.id;
+    }
+    return null;
   }
 
   Future<void> _loadMatchedRequests({int? page}) async {
     final coords = await _getCoordinates();
+    if (!mounted) return;
+
     if (coords == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Enable location permission fetch matched requests."),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Enable location permission fetch matched requests."),
+        ),
+      );
       return;
     }
+
     final nextPage = page ?? _matchedPage;
     _matchedPage = nextPage;
     await ref
@@ -60,6 +187,9 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
   Future<void> _loadAllPendingRequests({int? page}) async {
     final nextPage = page ?? _allPage;
     _allPage = nextPage;
+
+    if (!mounted) return;
+
     await ref
         .read(requestViewModelProvider.notifier)
         .getAllPendingRequests(page: nextPage, size: _pageSize);
@@ -174,12 +304,6 @@ class _RequestScreenState extends ConsumerState<RequestScreen> {
         elevation: 0,
         toolbarHeight: 80,
         titleSpacing: 0,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-        ),
         title: Text(
           "Requests",
           style: TextStyle(
