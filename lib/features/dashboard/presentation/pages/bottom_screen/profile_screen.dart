@@ -171,7 +171,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final compact = screenWidth < 380;
-    final coverHeight = compact ? 300.0 : 350.0;
+    final coverHeight = compact ? 200.0 : 250.0;
     final avatarSize = compact ? 104.0 : 130.0;
 
     final userSessionService = ref.watch(userSessionServiceProvider);
@@ -188,6 +188,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         : null;
 
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.primary,
+        elevation: 0,
+        toolbarHeight: 80,
+        titleSpacing: 0,
+        title: Text(
+          "My Profile",
+          style: TextStyle(
+            fontFamily: "BricolageGrotesque SemiBold",
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -204,17 +219,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    SizedBox(height: compact ? 14 : 20),
-                    Text(
-                      "My Profile",
-                      style: TextStyle(
-                        fontFamily: "BricolageGrotesque SemiBold",
-                        fontSize: compact ? 18 : 20,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: compact ? 18 : 25),
-
                     // Profile Picture (API only)
                     GestureDetector(
                       onTap: _pickMedia,
@@ -404,6 +408,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Logout',

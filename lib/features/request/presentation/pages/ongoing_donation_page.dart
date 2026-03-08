@@ -10,13 +10,13 @@ import 'package:url_launcher/url_launcher.dart';
 class OngoingDonationPage extends ConsumerStatefulWidget {
   const OngoingDonationPage({
     super.key,
-    required this.request,
+    this.request,
     required this.personName,
     this.personProfileFileName,
     required this.onFinishRequest,
   });
 
-  final RequestEntity request;
+  final RequestEntity? request;
   final String personName;
   final String? personProfileFileName;
   final Future<void> Function(String requestId) onFinishRequest;
@@ -44,7 +44,7 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
   }
 
   Future<void> _finishRequest() async {
-    final requestId = widget.request.requestId;
+    final requestId = widget.request?.requestId;
     if (requestId == null || requestId.isEmpty || _isFinishing) return;
 
     final confirmed = await showDialog<bool>(
@@ -94,6 +94,72 @@ class _OngoingDonationPageState extends ConsumerState<OngoingDonationPage> {
   @override
   Widget build(BuildContext context) {
     final request = widget.request;
+    if (request == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF4ECEE),
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          elevation: 0,
+          leading: IconButton(
+            color: Colors.white,
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back),
+          ),
+          title: const Text(
+            "Current Donation",
+            style: TextStyle(
+              fontFamily: "BricolageGrotesque Bold",
+              color: Colors.white,
+            ),
+          ),
+        ),
+        body: Column(
+          children: [
+            Container(
+              height: 26,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.block, size: 90, color: Color(0xFF8E8E95)),
+                        SizedBox(height: 16),
+                        Text(
+                          "No Current Donation\nAvailable",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF8E8E95),
+                            fontFamily: "BricolageGrotesque SemiBold",
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final condition = request.recipientCondition.name;
     final bloodGroup = request.recipientBlood?.bloodGroup ?? "-";
     final requestFor = request.requestFor.name.toUpperCase();

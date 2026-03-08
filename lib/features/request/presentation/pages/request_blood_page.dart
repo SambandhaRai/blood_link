@@ -421,11 +421,21 @@ class _RequestBloodPageState extends ConsumerState<RequestBloodPage>
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFFA72636),
+                                        width: 1.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                   validator: (v) {
                                     if (!_isOthers) return null;
                                     if (v == null || v.trim().length < 6) {
                                       return "Patient phone is required";
+                                    }
+                                    if (v.trim().length > 10) {
+                                      return "Invalid phone number";
                                     }
                                     return null;
                                   },

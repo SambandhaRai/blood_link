@@ -65,24 +65,28 @@ class _BottomScreenLayoutState extends ConsumerState<BottomScreenLayout> {
         .where((request) => request.donorId == currentUserId)
         .toList();
 
-    if (ongoingDonation.isEmpty) {
-      SnackbarUtils.showInfo(context, "No ongoing donation found.");
-      return;
-    }
-
-    final request = ongoingDonation.first;
-    final personName = request.receiver?.fullName ?? "Unknown User";
-    final profileFile = request.receiver?.profilePicture;
-
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => OngoingDonationPage(
-          request: request,
-          personName: personName,
-          personProfileFileName: profileFile,
-          onFinishRequest: _handleFinishFromShortcut,
-        ),
+        builder: (_) {
+          if (ongoingDonation.isEmpty) {
+            return OngoingDonationPage(
+              personName: "User",
+              onFinishRequest: _handleFinishFromShortcut,
+            );
+          }
+
+          final request = ongoingDonation.first;
+          final personName = request.receiver?.fullName ?? "Unknown User";
+          final profileFile = request.receiver?.profilePicture;
+
+          return OngoingDonationPage(
+            request: request,
+            personName: personName,
+            personProfileFileName: profileFile,
+            onFinishRequest: _handleFinishFromShortcut,
+          );
+        },
       ),
     );
   }
