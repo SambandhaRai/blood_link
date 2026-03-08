@@ -36,13 +36,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!mounted) return;
 
     if (ok) {
-      // Keep navigation consistent with your existing listener behavior.
       AppRoutes.pushAndRemoveUntil(context, BottomScreenLayout());
-      SnackbarUtils.showSuccess(context, "Fingerprint Login SuccessFull");
+      SnackbarUtils.showSuccess(context, "Biometric login successful");
     } else {
       final msg =
           ref.read(authViewmodelProvider).errorMessage ??
-          "Fingerprint login failed";
+          "Biometric login failed";
       SnackbarUtils.showError(context, msg);
     }
   }
@@ -296,15 +295,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 ),
                                 if (authState.biometricAvailable &&
                                     authState.biometricEnabled) ...[
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 12),
                                   OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 12,
+                                      ),
+                                      side: const BorderSide(
+                                        color: Color(0xFFA72636),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      foregroundColor: const Color(0xFFA72636),
+                                    ),
                                     onPressed: authState.biometricLoading
                                         ? null
                                         : _handleBiometricLogin,
                                     icon: authState.biometricLoading
                                         ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
+                                            width: 18,
+                                            height: 18,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
                                             ),
@@ -312,8 +324,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         : const Icon(Icons.fingerprint),
                                     label: Text(
                                       authState.biometricLoading
-                                          ? "Checking..."
-                                          : "Login with Fingerprint",
+                                          ? "Verifying biometrics..."
+                                          : "Login with Biometrics",
+                                      style: const TextStyle(
+                                        fontFamily:
+                                            "BricolageGrotesque SemiBold",
+                                      ),
                                     ),
                                   ),
                                 ],

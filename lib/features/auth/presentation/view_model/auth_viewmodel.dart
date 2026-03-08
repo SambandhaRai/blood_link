@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:blood_link/core/services/sensors/biometric/biometric_service.dart';
 import 'package:blood_link/core/services/storage/biometric_shared_prefs.dart';
 import 'package:blood_link/core/services/storage/token_service.dart';
+import 'package:blood_link/features/auth/domain/entities/auth_entity.dart';
 import 'package:blood_link/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/login_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/register_usecase.dart';
+import 'package:blood_link/features/auth/domain/usecases/update_profile_usecase.dart';
 import 'package:blood_link/features/auth/domain/usecases/upload_profile_picture_usecase.dart';
 import 'package:blood_link/features/auth/presentation/state/auth_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,7 @@ class AuthViewmodel extends Notifier<AuthState> {
   late final LoginUsecase _loginUsecase;
   late final LogoutUsecase _logoutUsecase;
   late final UploadProfilePictureUsecase _uploadProfilePictureUsecase;
+  late final UpdateProfileUsecase _updateProfileUsecase;
   late final GetCurrentUserUsecase _getCurrentUserUsecase;
   late final BiometricService _biometricService;
   late final BiometricPrefService _biometricPrefService;
@@ -35,6 +38,7 @@ class AuthViewmodel extends Notifier<AuthState> {
     _uploadProfilePictureUsecase = ref.read(
       uploadProfilePictureUsecaseProvider,
     );
+    _updateProfileUsecase = ref.read(updateProfileUsecaseProvider);
     _getCurrentUserUsecase = ref.read(getCurrentUserUsecaseProvider);
     _biometricService = ref.read(biometricServiceProvider);
     _biometricPrefService = ref.read(biometricPrefServiceProvider);
@@ -190,7 +194,7 @@ class AuthViewmodel extends Notifier<AuthState> {
             ? "Biometrics are currently unavailable on this device"
             : code == LocalAuthExceptionCode.uiUnavailable
             ? "Biometric prompt unavailable right now. Try again in a moment."
-            : "Fingerprint authentication failed",
+            : "Biometric authentication failed",
       );
       return false;
     }
@@ -261,6 +265,29 @@ class AuthViewmodel extends Notifier<AuthState> {
           status: AuthStatus.loaded,
           uploadProfilePictureName: imageName,
         );
+      },
+    );
+  }
+
+  Future<bool> updateProfile(AuthEntity entity) async {
+    state = state.copyWith(status: AuthStatus.loading, clearError: true);
+
+    final result = await _updateProfileUsecase(UpdateProfileParams(entity: entity));
+    return result.fold(
+      (failure) {
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
+      (updatedEntity) {
+        state = state.copyWith(
+          status: AuthStatus.loaded,
+          authEntity: updatedEntity,
+          errorMessage: null,
+        );
+        return true;
       },
     );
   }
